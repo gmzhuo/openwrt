@@ -24,21 +24,23 @@
 		device_type = "memory";
 		reg = <0x0 0x40000000 0x0 0x20000000>;
 	};
-	
-	chosen {
-		bootargs = "ubi.mtd=rootfs root=/dev/ubiblock0_1 rootfstype=squashfs rootwait";
-	};
 
 	soc {
+		pinctrl@1000000 {
+			led_pins: led_pins {
+				pins = "gpio42", "gpio43", "gpio21",
+				       "gpio22", "gpio51";
+				function = "gpio";
+				drive-strength = <8>;
+				bias-pull-down;
+			};
+		};
+
 		serial@78b3000 {
 			status = "ok";
 		};
 
 		serial@78b1000 {
-			 status = "ok";
-		};
-
-		i2c@78b6000 {
 			 status = "ok";
 		};
 
@@ -181,6 +183,42 @@
 		pci@10000000 {
 			status = "ok";
 			perst-gpio = <&tlmm 61 0x1>;
+		};
+	};
+
+	leds {
+		compatible = "gpio-leds";
+		pinctrl-0 = <&led_pins>;
+		pinctrl-names = "default";
+
+		led_sys_blue {
+			label = "led_blue";
+			gpio = <&tlmm 42 0x0>;
+			default-state = "off";
+		};
+
+		led_sys_yellow {
+			label = "led_yellow";
+			gpio = <&tlmm 43 0x0>;
+			default-state = "on";
+		};
+
+		led_net_blue {
+			label = "net_blue";
+			gpio = <&tlmm 21 0x0>;
+			default-state = "off";
+			};
+
+		led_net_yellow {
+			label = "net_yellow";
+			gpio = <&tlmm 22 0x0>;
+			default-state = "off";
+		};
+
+		led_ant {
+			label = "led_ant";
+			gpio = <&tlmm 51 0x0>;
+			default-state = "off";
 		};
 	};
 };
