@@ -1,8 +1,6 @@
 include $(TOPDIR)/rules.mk
 include $(INCLUDE_DIR)/image.mk
 
-IPQ807X_KERNEL_LOADADDR = 0x41080000
-
 define Device/Default
 	PROFILES := Default
 	KERNEL_DEPENDS = $$(wildcard $(DEVICE_DTS_DIR)/$$(DEVICE_DTS).dts)
@@ -45,6 +43,21 @@ define Device/xiaomi_ax3600
 	UBI_OPTS:="-m 2048 -p 128KiB -O 2048 -v"
 endef
 TARGET_DEVICES += xiaomi_ax3600
+
+define Device/qcom_ipq8067-hk01
+	$(call Device/FitImage)
+	$(call Device/UbiFit)
+	DEVICE_VENDOR := Qualcomm
+	DEVICE_MODEL := HK01
+	DEVICE_VARIANT := standard
+	SOC := qcom-ipq8074
+	KERNEL_INSTALL := 1
+	DEVICE_DTS := qcom/ipq8074-hk01
+	BLOCKSIZE := 128k
+	PAGESIZE := 2048
+	BOARD_NAME := hk01
+endef
+TARGET_DEVICES += qcom_ipq8067-hk01
 
 
 $(eval $(call BuildImage))
