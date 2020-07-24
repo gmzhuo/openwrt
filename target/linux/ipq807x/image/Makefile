@@ -1,40 +1,63 @@
 include $(TOPDIR)/rules.mk
 include $(INCLUDE_DIR)/image.mk
 
-IPQ807X_KERNEL_LOADADDR = 0x41080000
-DEVICE_DTS_CONFIG = "config@hk01"
-
-define Image/BuildKernel/FIT
-	gzip -9 -c $(KDIR)/Image > $(KDIR)/Image.gz
-	$(call CompressLzma,$(KDIR)/Image,$(KDIR)/Image.gz)
-	$(call Image/BuildKernel/MkFIT,$(1), $(KDIR)/Image.gz, $(DTS_DIR)/qcom/$(1).dtb,gzip,$(2),$(2))
-	$(CP) $(KDIR)/fit-$(1).itb $(BIN_DIR)/$(IMG_PREFIX)-$(1)-fit-uImage.itb
-	mkdir -p $(BIN_DIR)/dtbs/
-	$(CP) $(DTS_DIR)/qcom/ipq*.dtb $(BIN_DIR)/dtbs/
-	$(CP) $(KDIR)/Image $(BIN_DIR)/dtbs/
+define Device/Default
+	PROFILES := Default
+	KERNEL_DEPENDS = $$(wildcard $(DEVICE_DTS_DIR)/$$(DEVICE_DTS).dts)
+	KERNEL_INITRAMFS_PREFIX := $$(IMG_PREFIX)-$(1)-initramfs
+	KERNEL_PREFIX := $$(IMAGE_PREFIX)
+	KERNEL_LOADADDR = 0x41080000
+	DEVICE_DTS = $$(SOC)-$(lastword $(subst _, ,$(1)))
+	SUPPORTED_DEVICES := $(subst _,$(comma),$(1))
+	IMAGES := sysupgrade.bin
+	IMAGE/sysupgrade.bin = sysupgrade-tar | append-metadata
+	IMAGE/sysupgrade.bin/squashfs :=
 endef
 
-define Image/BuildKernel/FITInitramfs
-	$(CP) $(KDIR)/Image-initramfs $(BIN_DIR)/dtbs/
-	$(CP) $(KDIR)/Image-initramfs $(BIN_DIR)/$(IMG_PREFIX)-vmlinux-initramfs.bin
-	$(call Image/BuildKernel/MkFIT,$(1), $(KDIR)/Image-initramfs, $(DTS_DIR)/qcom/$(1).dtb, none,$(2),$(2),-initramfs)
-	$(CP) $(KDIR)/fit-$(1)-initramfs.itb $(BIN_DIR)/$(IMG_PREFIX)-$(1)-fit-uImage-initramfs.itb
+define Device/FitImage
+	KERNEL_SUFFIX := -fit-uImage.itb
+	KERNEL = kernel-bin | gzip | fit gzip $$(DTS_DIR)/$$(DEVICE_DTS).dtb
+	KERNEL_NAME := Image
 endef
 
-define Image/Build/squashfs
-	$(call prepare_generic_squashfs,$(KDIR)/root.squashfs)
+define Device/UbiFit
+	KERNEL_IN_UBI := 1
+	IMAGES := nand-factory.bin nand-sysupgrade.bin
+	IMAGE/nand-factory.bin := append-ubi
+	IMAGE/nand-sysupgrade.bin := sysupgrade-tar | append-metadata
 endef
 
-define Image/BuildKernel
-	$(call Image/BuildKernel/FIT,ipq8074-hk01,$(IPQ807X_KERNEL_LOADADDR))
+define Device/xiaomi_ax3600
+	$(call Device/FitImage)
+	$(call Device/UbiFit)
+	DEVICE_VENDOR := Xiaomi
+	DEVICE_MODEL := AX3600
+	DEVICE_VARIANT := standard
+	DEVICE_DTS_CONFIG := config@ac04
+	SOC := qcom-ipq8074
+	KERNEL_INSTALL := 1
+	DEVICE_DTS := qcom/ipq8074-ax3600
+	BLOCKSIZE := 128k
+	PAGESIZE := 2048
+	BOARD_NAME := ax3600
+	UBI_OPTS:="-m 2048 -p 128KiB -O 2048 -v"
 endef
+TARGET_DEVICES += xiaomi_ax3600
 
-define Image/BuildKernel/Initramfs
-	$(call Image/BuildKernel/FITInitramfs,ipq8074-hk01,$(IPQ807X_KERNEL_LOADADDR))
+define Device/qcom_ipq8067-hk01
+	$(call Device/FitImage)
+	$(call Device/UbiFit)
+	DEVICE_VENDOR := Qualcomm
+	DEVICE_MODEL := HK01
+	DEVICE_VARIANT := standard
+	SOC := qcom-ipq8074
+	KERNEL_INSTALL := 1
+	DEVICE_DTS := qcom/ipq8074-hk01
+	BLOCKSIZE := 128k
+	PAGESIZE := 2048
+	BOARD_NAME := hk01
 endef
+TARGET_DEVICES += qcom_ipq8067-hk01
 
-define Image/Build
-	$(call Image/Build/$(1),$(1))
-endef
 
 $(eval $(call BuildImage))

@@ -1,0 +1,26 @@
+--- a/drivers/mtd/nand/raw/qcom_nandc.c
++++ b/drivers/mtd/nand/raw/qcom_nandc.c
+@@ -2756,6 +2756,7 @@ static int qcom_nandc_setup(struct qcom_
+ 		    NAND_DEV_CMD_VLD_VAL);
+ 
+ 	/* enable ADM or BAM DMA */
++	udelay(1000);
+ 	if (nandc->props->is_bam) {
+ 		nand_ctrl = nandc_read(nandc, NAND_CTRL);
+ 		nandc_write(nandc, NAND_CTRL, nand_ctrl | BAM_MODE_EN);
+@@ -2763,6 +2764,7 @@ static int qcom_nandc_setup(struct qcom_
+ 		nandc_write(nandc, NAND_FLASH_CHIP_SELECT, DM_EN);
+ 	}
+ 
++        udelay(1000);
+ 	/* save the original values of these registers */
+ 	nandc->cmd1 = nandc_read(nandc, dev_cmd_reg_addr(nandc, NAND_DEV_CMD1));
+ 	nandc->vld = NAND_DEV_CMD_VLD_VAL;
+@@ -2954,6 +2956,7 @@ static int qcom_nandc_probe(struct platf
+ 	if (ret)
+ 		goto err_aon_clk;
+ 
++	udelay(2000);
+ 	ret = qcom_nandc_setup(nandc);
+ 	if (ret)
+ 		goto err_setup;

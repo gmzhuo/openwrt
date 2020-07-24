@@ -1,0 +1,224 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/dts-v1/;
+/* Copyright (c) 2017, The Linux Foundation. All rights reserved.
+ */
+#include "ipq8074.dtsi"
+
+/ {
+	#address-cells = <0x2>;
+	#size-cells = <0x2>;
+	model = "AX3600";
+	compatible = "qcom,ipq807x-ac04", "qcom,ipq807x";
+	interrupt-parent = <&intc>;
+
+	aliases {
+		serial0 = &blsp1_uart5;
+		serial1 = &blsp1_uart3;
+	};
+
+	chosen {
+		stdout-path = "serial0";
+	};
+
+	memory {
+		device_type = "memory";
+		reg = <0x0 0x40000000 0x0 0x20000000>;
+	};
+
+	soc {
+		pinctrl@1000000 {
+			led_pins: led_pins {
+				pins = "gpio42", "gpio43", "gpio21",
+				       "gpio22", "gpio51";
+				function = "gpio";
+				drive-strength = <8>;
+				bias-pull-down;
+			};
+		};
+
+		serial@78b3000 {
+			status = "ok";
+		};
+
+		serial@78b1000 {
+			 status = "ok";
+		};
+
+		dma@7984000 {
+			 status = "ok";
+		};
+
+		nand@79b0000 {
+			status = "ok";
+
+			nand@0 {
+				reg = <0>;
+				nand-ecc-strength = <4>;
+				nand-ecc-step-size = <512>;
+				nand-bus-width = <8>;
+				
+				partitions {
+					compatible = "fixed-partitions";
+					#address-cells = <1>;
+					#size-cells = <1>;
+					
+					partition0@0 {
+						label = "0:SBL1";
+						reg = <0x0 0x100000>;
+						read-only;
+					};
+
+					partition1@100000 {
+						label = "0:MIBIB";
+						reg = <0x100000 0x100000>;
+						read-only;
+					};
+
+					partition2@200000 {
+						label = "0:QSEE";
+						reg = <0x200000 0x300000>;
+						read-only;
+					};
+
+					partition3@500000 {
+						label = "0:DEVCFG";
+						reg = <0x500000 0x80000>;
+						read-only;
+					};
+
+
+					partition4@580000 {
+						label = "0:RPM";
+						reg = <0x580000 0x80000>;
+						read-only;
+					};
+
+					partition5@600000 {
+						label = "0:CDT";
+						reg = <0x600000 0x80000>;
+						read-only;
+					};
+
+
+					partition6@680000 {
+						label = "0:APPSBLENV";
+						reg = <0x680000 0x80000>;
+						read-only;
+					};
+
+					partition7@700000 {
+						label = "0:APPSBL";
+						reg = <0x700000 0x100000>;
+						read-only;
+					};
+
+					partition8@800000 {
+						label = "0:ART";
+						reg = <0x800000 0x80000>;
+						read-only;
+					};
+
+					partition9@880000 {
+						label = "bdata";
+						reg = <0x880000 0x80000>;
+						read-only;
+					};
+
+					partition10@900000 {
+						label = "crash";
+						reg = <0x900000 0x80000>;
+						read-only;
+					};
+
+					partition11@980000 {
+						label = "crash_syslog";
+						reg = <0x980000 0x80000>;
+						read-only;
+					};
+
+					partition12@a00000 {
+						label = "rootfs";
+						reg = <0xa00000 0x23c0000>;
+					};
+
+					partition13@2dc0000 {
+						label = "rootfs_1";
+						reg = <0x2dc0000 0x8000000>;
+					};
+
+
+					partition14@adc0000 {
+						label = "overlay";
+						reg = <0xadc0000 0x1ec0000>;
+					};
+
+					partition15@cc80000 {
+						label = "rsvd0";
+						reg = <0xcc80000 0x80000>;
+						read-only;
+					};
+
+					partition16@cd00000 {
+						label = "0:WIFIFW";
+						reg = <0xcd00000 0x900000>;
+						read-only;
+					};
+				};
+			};
+		};
+
+		phy@86000 {
+			status = "ok";
+		};
+
+		phy@8e000 {
+			status = "ok";
+		};
+
+		pci@20000000 {
+			status = "ok";
+			perst-gpio = <&tlmm 58 0x1>;
+		};
+
+		pci@10000000 {
+			status = "ok";
+			perst-gpio = <&tlmm 61 0x1>;
+		};
+	};
+
+	leds {
+		compatible = "gpio-leds";
+		pinctrl-0 = <&led_pins>;
+		pinctrl-names = "default";
+
+		led_sys_blue {
+			label = "led_blue";
+			gpio = <&tlmm 42 0x0>;
+			default-state = "off";
+		};
+
+		led_sys_yellow {
+			label = "led_yellow";
+			gpio = <&tlmm 43 0x0>;
+			default-state = "on";
+		};
+
+		led_net_blue {
+			label = "net_blue";
+			gpio = <&tlmm 21 0x0>;
+			default-state = "off";
+			};
+
+		led_net_yellow {
+			label = "net_yellow";
+			gpio = <&tlmm 22 0x0>;
+			default-state = "off";
+		};
+
+		led_ant {
+			label = "led_ant";
+			gpio = <&tlmm 51 0x0>;
+			default-state = "off";
+		};
+	};
+};
