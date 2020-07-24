@@ -33,10 +33,10 @@ define Device/xiaomi_ax3600
 	DEVICE_VENDOR := Xiaomi
 	DEVICE_MODEL := AX3600
 	DEVICE_VARIANT := standard
-	DEVICE_DTS_CONFIG := config@ac04
 	SOC := qcom-ipq8074
 	KERNEL_INSTALL := 1
 	DEVICE_DTS := qcom/ipq8074-ax3600
+	DEVICE_DTS_CONFIG := config@ac04
 	BLOCKSIZE := 128k
 	PAGESIZE := 2048
 	BOARD_NAME := ax3600

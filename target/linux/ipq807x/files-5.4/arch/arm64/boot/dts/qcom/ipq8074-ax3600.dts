@@ -58,6 +58,22 @@
 					bias-pull-up;
 				};
 			};
+			
+			pcie_pins {
+				pcie0_rst {
+					pins = "gpio52";
+					function = "pcie0_rst";
+					drive-strength = <0x8>;
+					bias-pull-down;
+				};
+
+				pcie0_wake {
+					pins = "gpio59";
+					function = "pcie0_wake";
+					drive-strength = <0x8>;
+					bias-pull-down;
+				};
+			};
 		};
 
 		serial@78b3000 {
@@ -191,22 +207,13 @@
 			};
 		};
 
-		phy@86000 {
-			status = "ok";
-		};
-
-		phy@8e000 {
+		phy@84000 {
 			status = "ok";
 		};
 
 		pci@20000000 {
 			status = "ok";
-			perst-gpio = <&tlmm 58 0x1>;
-		};
-
-		pci@10000000 {
-			status = "ok";
-			perst-gpio = <&tlmm 61 0x1>;
+			perst-gpio = <&tlmm 52 0x1>;
 		};
 
 		mdio@90000 {
