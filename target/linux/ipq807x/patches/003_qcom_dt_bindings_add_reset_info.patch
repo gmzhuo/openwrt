@@ -1,0 +1,50 @@
+Index: linux-5.4.52/drivers/clk/qcom/gcc-ipq8074.c
+===================================================================
+--- linux-5.4.52.orig/drivers/clk/qcom/gcc-ipq8074.c
++++ linux-5.4.52/drivers/clk/qcom/gcc-ipq8074.c
+@@ -4685,6 +4685,20 @@ static const struct qcom_reset_map gcc_i
+ 	[GCC_PCIE1_AXI_SLAVE_ARES] = { 0x76040, 4 },
+ 	[GCC_PCIE1_AHB_ARES] = { 0x76040, 5 },
+ 	[GCC_PCIE1_AXI_MASTER_STICKY_ARES] = { 0x76040, 6 },
++	[GCC_PPE_FULL_RESET] = { 0x68014, 0, 0xf0000},
++	[GCC_UNIPHY0_SOFT_RESET] = { 0x56004, 0, 0x3ff2},
++	[GCC_UNIPHY0_XPCS_RESET] = { 0x56004, 2 },
++	[GCC_UNIPHY1_SOFT_RESET] = { 0x56104, 0, 0x32},
++	[GCC_UNIPHY1_XPCS_RESET] = { 0x56104, 2 },
++	[GCC_UNIPHY2_SOFT_RESET] = { 0x56204, 0, 0x32},
++	[GCC_UNIPHY2_XPCS_RESET] = { 0x56204, 2 },
++	[GCC_EDMA_HW_RESET] = { 0x68014, 0, 0x300000},
++	[GCC_NSSPORT1_RESET] = { 0x68014, 0, 0x1000003},
++	[GCC_NSSPORT2_RESET] = { 0x68014, 0, 0x200000c},
++	[GCC_NSSPORT3_RESET] = { 0x68014, 0, 0x4000030},
++	[GCC_NSSPORT4_RESET] = { 0x68014, 0, 0x8000300},
++	[GCC_NSSPORT5_RESET] = { 0x68014, 0, 0x10000c00},
++	[GCC_NSSPORT6_RESET] = { 0x68014, 0, 0x20003000},
+ };
+ 
+ static const struct of_device_id gcc_ipq8074_match_table[] = {
+Index: linux-5.4.52/include/dt-bindings/clock/qcom,gcc-ipq8074.h
+===================================================================
+--- linux-5.4.52.orig/include/dt-bindings/clock/qcom,gcc-ipq8074.h
++++ linux-5.4.52/include/dt-bindings/clock/qcom,gcc-ipq8074.h
+@@ -362,5 +362,20 @@
+ #define GCC_PCIE1_AXI_SLAVE_ARES		128
+ #define GCC_PCIE1_AHB_ARES			129
+ #define GCC_PCIE1_AXI_MASTER_STICKY_ARES	130
++#define GCC_PPE_FULL_RESET                      131
++#define GCC_UNIPHY0_SOFT_RESET          132
++#define GCC_UNIPHY0_XPCS_RESET          133
++#define GCC_UNIPHY1_SOFT_RESET          134
++#define GCC_UNIPHY1_XPCS_RESET          135
++#define GCC_UNIPHY2_SOFT_RESET          136
++#define GCC_UNIPHY2_XPCS_RESET          137
++#define GCC_EDMA_HW_RESET               138
++#define GCC_NSSPORT1_RESET                      139
++#define GCC_NSSPORT2_RESET                      140
++#define GCC_NSSPORT3_RESET                      141
++#define GCC_NSSPORT4_RESET                      142
++#define GCC_NSSPORT5_RESET                      143
++#define GCC_NSSPORT6_RESET                      144
++#define GCC_PCIE0_AXI_SLAVE_STICKY_ARES 123
+ 
+ #endif
