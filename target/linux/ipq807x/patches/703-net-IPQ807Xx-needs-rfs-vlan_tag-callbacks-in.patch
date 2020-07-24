@@ -82,3 +82,30 @@ Index: linux-5.4.52/drivers/net/ethernet/qualcomm/Kconfig
  source "drivers/net/ethernet/qualcomm/rmnet/Kconfig"
  
  endif # NET_VENDOR_QUALCOMM
+Index: linux-5.4.52/drivers/net/phy/Kconfig
+===================================================================
+--- linux-5.4.52.orig/drivers/net/phy/Kconfig
++++ linux-5.4.52/drivers/net/phy/Kconfig
+@@ -205,6 +205,12 @@ config MDIO_XGENE
+ 	  This module provides a driver for the MDIO busses found in the
+ 	  APM X-Gene SoC's.
+ 
++config MDIO_QCA
++	tristate "Qualcomm Atheros ipq MDIO interface"
++	help
++	  This driver supports the MDIO interface found in Qualcomm
++	  Atheros ipq Soc chip.
++
+ endif
+ endif
+ 
+Index: linux-5.4.52/drivers/net/phy/Makefile
+===================================================================
+--- linux-5.4.52.orig/drivers/net/phy/Makefile
++++ linux-5.4.52/drivers/net/phy/Makefile
+@@ -110,3 +110,5 @@ obj-$(CONFIG_STE10XP)		+= ste10Xp.o
+ obj-$(CONFIG_TERANETICS_PHY)	+= teranetics.o
+ obj-$(CONFIG_VITESSE_PHY)	+= vitesse.o
+ obj-$(CONFIG_XILINX_GMII2RGMII) += xilinx_gmii2rgmii.o
++obj-$(CONFIG_MDIO_QCA)      	+= mdio-qca.o
++

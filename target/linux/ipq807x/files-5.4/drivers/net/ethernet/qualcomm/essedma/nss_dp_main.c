@@ -571,6 +571,7 @@ static int32_t nss_dp_probe(struct platform_device *pdev)
 	dp_priv->netdev = netdev;
 	netdev->watchdog_timeo = 5 * HZ;
 	netdev->netdev_ops = &nss_dp_netdev_ops;
+	netdev->dev.parent = &pdev->dev;
 	nss_dp_set_ethtool_ops(netdev);
 	nss_dp_switchdev_setup(netdev);
 

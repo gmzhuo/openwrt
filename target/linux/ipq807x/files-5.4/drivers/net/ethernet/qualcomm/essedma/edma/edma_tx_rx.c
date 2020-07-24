@@ -436,7 +436,6 @@ int edma_napi(struct napi_struct *napi, int budget)
 	for (i = 0; i < ehw->rxdesc_rings; i++) {
 		rxdesc_ring = &ehw->rxdesc_ring[i];
 		work_done += edma_clean_rx(ehw, budget, rxdesc_ring);
-		printk("read done %d\r\n", work_done);
 	}
 
 	for (i = 0; i < ehw->txcmpl_rings; i++) {
@@ -448,8 +447,6 @@ int edma_napi(struct napi_struct *napi, int budget)
 		rxfill_ring = &ehw->rxfill_ring[i];
 		work_done += edma_alloc_rx_buffer(ehw, rxfill_ring);
 	}
-
-	printk("work done %d\r\n", work_done);
 
 	/*
 	 * Resume netdev Tx queue
