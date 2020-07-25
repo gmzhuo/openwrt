@@ -27,11 +27,23 @@ Index: linux-5.4.52/include/dt-bindings/clock/qcom,gcc-ipq8074.h
 ===================================================================
 --- linux-5.4.52.orig/include/dt-bindings/clock/qcom,gcc-ipq8074.h
 +++ linux-5.4.52/include/dt-bindings/clock/qcom,gcc-ipq8074.h
-@@ -362,7 +362,22 @@
- #define GCC_PCIE1_AXI_SLAVE_ARES		128
+@@ -230,6 +230,9 @@
+ #define GCC_GP1_CLK				221
+ #define GCC_GP2_CLK				222
+ #define GCC_GP3_CLK				223
++#define GCC_PCIE0_AXI_S_BRIDGE_CLK      224
++#define GCC_PCIE0_RCHNG_CLK_SRC         225
++#define GCC_PCIE0_RCHNG_CLK             226
+ 
+ #define GCC_BLSP1_BCR				0
+ #define GCC_BLSP1_QUP1_BCR			1
+@@ -363,8 +366,20 @@
  #define GCC_PCIE1_AHB_ARES			129
  #define GCC_PCIE1_AXI_MASTER_STICKY_ARES	130
--#define GCC_PCIE0_AXI_SLAVE_STICKY_ARES		131
+ #define GCC_PCIE0_AXI_SLAVE_STICKY_ARES		131
+-#define GCC_PCIE0_AXI_S_BRIDGE_CLK		132
+-#define GCC_PCIE0_RCHNG_CLK_SRC			133
+-#define GCC_PCIE0_RCHNG_CLK			134
 +#define GCC_PCIE0_AXI_SLAVE_STICKY_ARES         131
 +#define GCC_PPE_FULL_RESET                      132
 +#define GCC_UNIPHY0_SOFT_RESET                  133
@@ -47,7 +59,5 @@ Index: linux-5.4.52/include/dt-bindings/clock/qcom,gcc-ipq8074.h
 +#define GCC_NSSPORT4_RESET                      143
 +#define GCC_NSSPORT5_RESET                      144
 +#define GCC_NSSPORT6_RESET                      145
-+
- #define GCC_PCIE0_AXI_S_BRIDGE_CLK		132
- #define GCC_PCIE0_RCHNG_CLK_SRC			133
- #define GCC_PCIE0_RCHNG_CLK			134
+ 
+ #endif

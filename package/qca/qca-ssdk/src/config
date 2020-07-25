@@ -1,0 +1,160 @@
+OS=linux
+
+OS_VER=4_4
+
+OS_SUB=31
+
+ifndef OS_VER
+OS_VER=2_6
+endif
+# OS subversion, 2.6.31 for WASP (db120)
+#OS_SUB=31
+# GCC version, 3 or 4
+#GCC_VER=4
+
+#TOOL_PATH=/data/work/yocto/ipq807x-spf100-cs/qsdk/staging_dir/toolchain-aarch64_cortex-a53_gcc-5.2.0_musl-1.1.16/bin
+#SYS_PATH=/data/work/yocto/ipq807x-spf100-cs/qsdk/build_dir/target-aarch64_cortex-a53_musl-1.1.16/linux-ipq_ipq807x_64/linux-4.4.60
+
+
+ifeq ($(ARCH), arm)
+ifeq ($(KVER),$(filter 4.4%,$(KVER)))
+  CPU_CFLAG=-D__LINUX_ARM_ARCH__=7  -DMODULE -fno-common -DCONFIG_MMU -D$(BOARD_NAME)
+endif
+
+#KVER=4.4.60
+ifeq ($(KVER),$(filter 5.4%,$(KVER)))
+  CPU_CFLAG=-D__LINUX_ARM_ARCH__=7  -DMODULE -fno-common -DCONFIG_MMU -D$(BOARD_NAME)
+endif
+endif
+
+ifeq ($(ARCH), arm64)
+ifeq ($(KVER),$(filter 4.1% 4.4% 4.9% 5.4%,$(KVER)))
+  CPU_CFLAG=  -DMODULE -Os -pipe -march=armv8-a -mcpu=cortex-a53+crypto -fno-caller-saves -fno-strict-aliasing -Werror -fno-common -Wno-format-security -Wno-pointer-sign -Wno-unused-but-set-variable -Wno-error=unused-result -mcmodel=large
+endif
+endif
+
+
+
+SWCONFIG=TRUE
+
+KERNEL_MODE=TRUE
+
+#FAL=FALSE or not define FAL, FAL will not be included in SSDK
+FAL=TRUE
+
+#NOT DEFINED ALL CHIP
+#CHIP_TYPE can be defined as ATHENA, GARUDA, SHIVA, HORUS, ISIS, ISISC, DESS, HPPE, CPPE and ALL_CHIP(ALL_CHIP means GARUDA, SHIVA, HORUS, ISIS, ISISC, DESS and HPPE CPPE)
+ifndef CHIP_TYPE
+CHIP_TYPE=ALL_CHIP
+endif
+
+#UK_IF=FALSE or not define UK_IF, UK_IF will not be included in SSDK
+#when UK_IF=TRUE one of UK_NETLINK,UK_IOCTL must be defined as TRUE
+UK_IF=TRUE
+#UK_IOCTL=TRUE define user-kernel space communication based on ioctl
+UK_IOCTL=TRUE
+UK_MINOR_DEV=254
+
+#API_LOCK=FALSE or not define API_LOCK, API_LOCK will not be included in SSDK
+API_LOCK=FALSE
+
+#REG_ACCESS_SPEEDUP=FALSE or not define REG_ACCESS_SPEEDUP, REG_ACCESS_SPEEDUP will not be enabled, now only ISIS supports
+REG_ACCESS_SPEEDUP=FALSE
+
+#ALL supported features:
+#ACL FDB IGMP LEAKY LED MIB MIRROR MISC PORTCONTROL PORTVLAN QOS RATE STP VLAN
+#IN_X=FALSE or not define IN_X, X will not be included in SSDK
+IN_ACL=TRUE
+IN_FDB=TRUE
+IN_IGMP=TRUE
+IN_LEAKY=TRUE
+IN_LED=TRUE
+IN_MIB=TRUE
+IN_MIRROR=TRUE
+IN_MISC=TRUE
+IN_PORTCONTROL=TRUE
+IN_PORTVLAN=TRUE
+IN_QOS=TRUE
+IN_RATE=TRUE
+IN_STP=TRUE
+IN_VLAN=TRUE
+IN_REDUCED_ACL=FALSE
+IN_COSMAP=TRUE
+IN_IP=TRUE
+IN_NAT=TRUE
+IN_FLOW=TRUE
+IN_TRUNK=TRUE
+IN_RSS_HASH=TRUE
+IN_SEC=TRUE
+IN_QM=TRUE
+IN_PPPOE=TRUE
+
+ifeq ($(HNAT_FEATURE), enable)
+IN_NAT_HELPER=TRUE
+else
+IN_NAT_HELPER=FALSE
+endif
+
+ifeq ($(RFS_FEATURE), enable)
+IN_RFS=TRUE
+else
+IN_RFS=FALSE
+endif
+
+IN_INTERFACECONTROL=TRUE
+IN_MACBLOCK=FALSE
+
+#The PHY CHIP defined according to the switch CHIP
+ifeq (ALL_CHIP, $(CHIP_TYPE))
+IN_AQUANTIA_PHY=TRUE
+IN_QCA803X_PHY=TRUE
+IN_QCA808X_PHY=TRUE
+IN_MALIBU_PHY=TRUE
+IN_SFP_PHY=TRUE
+else ifeq (HPPE, $(CHIP_TYPE))
+IN_AQUANTIA_PHY=TRUE
+IN_QCA803X_PHY=TRUE
+IN_QCA808X_PHY=TRUE
+IN_SFP_PHY=TRUE
+IN_MALIBU_PHY=TRUE
+else ifeq (CPPE, $(CHIP_TYPE))
+IN_QCA808X_PHY=TRUE
+IN_MALIBU_PHY=TRUE
+else ifeq (DESS, $(CHIP_TYPE))
+IN_MALIBU_PHY=TRUE
+else
+IN_QCA803X_PHY=FALSE
+IN_QCA808X_PHY=FALSE
+IN_AQUANTIA_PHY=FALSE
+IN_MALIBU_PHY=FALSE
+IN_SFP_PHY=FALSE
+endif
+
+ifeq ($(SFE_FEATURE), enable)
+IN_SFE=TRUE
+else
+IN_SFE=FALSE
+endif
+
+#QCA808X PHY features
+ifeq ($(IN_QCA808X_PHY), TRUE)
+IN_PHY_I2C_MODE=TRUE
+IN_PTP=TRUE
+else
+IN_PHY_I2C_MODE=FALSE
+endif
+
+#IN_PHY_I2C_MODE depends on IN_SFP_PHY
+ifeq ($(IN_PHY_I2C_MODE), TRUE)
+IN_SFP_PHY=TRUE
+endif
+
+IN_VSI=TRUE
+IN_CTRLPKT=TRUE
+IN_SERVCODE=TRUE
+IN_BM=TRUE
+IN_SHAPER=TRUE
+IN_POLICER=TRUE
+IN_UNIPHY=TRUE
+
+HAWKEYE_CHIP=TRUE
