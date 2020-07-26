@@ -616,7 +616,13 @@ static int32_t nss_dp_probe(struct platform_device *pdev)
 			goto fail;
 		}
 
-#if 0
+
+#if (LINUX_VERSION_CODE > KERNEL_VERSION(5,4,0))
+		linkmode_set_bit(ETHTOOL_LINK_MODE_Pause_BIT, dp_priv->phydev->advertising);
+		linkmode_set_bit(ETHTOOL_LINK_MODE_Asym_Pause_BIT, dp_priv->phydev->advertising);
+		linkmode_set_bit(ETHTOOL_LINK_MODE_Pause_BIT, dp_priv->phydev->supported);
+		linkmode_set_bit(ETHTOOL_LINK_MODE_Asym_Pause_BIT, dp_priv->phydev->supported);
+#else
 		dp_priv->phydev->advertising |=
 				(ADVERTISED_Pause | ADVERTISED_Asym_Pause);
 		dp_priv->phydev->supported |=
