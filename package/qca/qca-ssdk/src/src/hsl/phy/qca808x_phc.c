@@ -1054,18 +1054,24 @@ int qca808x_hwtstamp(struct phy_device *phydev, struct ifreq *ifr)
 		return -EFAULT;
 	}
 
-#if (LINUX_VERSION_CODE <= KERNEL_VERSION(5,4,0))
 	pdata->step_mode = ptp_config.step_mode;
 	if (ptp_info->hwts_rx_type != PTP_CLASS_NONE) {
+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(5,4,0))
 		phydev->supported |= SUPPORTED_PTP;
 		phydev->advertising |= SUPPORTED_PTP;
+#else
+		//linkmode_set_bit(, phydev->supported);
+		//linkmode_set_bit(, phydev->advertising);
+#endif
 	} else {
+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(5,4,0))
 		phydev->supported &= ~SUPPORTED_PTP;
 		phydev->advertising &= ~SUPPORTED_PTP;
-	}
 #else
-	//todo
+		//linkmode_clear_bit(, phydev->supported);
+		//linkmode_clear_bit(, phydev->advertising);
 #endif
+	}
 
 	return copy_to_user(ifr->ifr_data, &cfg, sizeof(cfg)) ? -EFAULT : 0;
 }

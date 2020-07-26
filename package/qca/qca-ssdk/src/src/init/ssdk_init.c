@@ -1525,10 +1525,11 @@ qca_phy_config_init(struct phy_device *pdev)
 	if (pdev->addr != 0) {
 #endif
 #if (LINUX_VERSION_CODE <= KERNEL_VERSION(5,4,0))
-        pdev->supported |= SUPPORTED_1000baseT_Full;
-        pdev->advertising |= ADVERTISED_1000baseT_Full;
+		pdev->supported |= SUPPORTED_1000baseT_Full;
+		pdev->advertising |= ADVERTISED_1000baseT_Full;
 #else
-		//todo
+		linkmode_set_bit(ETHTOOL_LINK_MODE_1000baseT_Full_BIT, pdev->supported);
+		linkmode_set_bit(ETHTOOL_LINK_MODE_1000baseT_Full_BIT, pdev->advertising);
 #endif
 #ifndef BOARD_AR71XX
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
@@ -1564,7 +1565,8 @@ qca_phy_config_init(struct phy_device *pdev)
 	pdev->supported |= SUPPORTED_1000baseT_Full;
 	pdev->advertising |= ADVERTISED_1000baseT_Full;
 #else
-	//todo
+	linkmode_set_bit(ETHTOOL_LINK_MODE_1000baseT_Full_BIT, pdev->supported);
+	linkmode_set_bit(ETHTOOL_LINK_MODE_1000baseT_Full_BIT, pdev->advertising);
 #endif
 
 #if defined(IN_SWCONFIG)

@@ -81,8 +81,6 @@ static void nss_dp_get_pauseparam(struct net_device *netdev,
 {
 	struct nss_dp_dev *dp_priv = (struct nss_dp_dev *)netdev_priv(netdev);
 
-	pause->rx_pause = 0;
-	pause->tx_pause = 0;
 	pause->rx_pause = dp_priv->pause & FLOW_CTRL_RX ? 1 : 0;
 	pause->tx_pause = dp_priv->pause & FLOW_CTRL_TX ? 1 : 0;
 	pause->autoneg = AUTONEG_ENABLE;
