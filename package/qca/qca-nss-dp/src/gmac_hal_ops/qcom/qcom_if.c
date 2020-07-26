@@ -235,7 +235,6 @@ static int32_t qcom_get_netdev_stats(struct nss_gmac_hal_dev *nghd,
 
 	stats->collisions = hal_stats->TxCollision;
 	stats->multicast = hal_stats->RxMulti;
-
 	return 0;
 }
 
@@ -279,7 +278,7 @@ int32_t qcom_get_strings(struct nss_gmac_hal_dev *nghd, int32_t sset,
 	case ETH_SS_PRIV_FLAGS:
 		for (i = 0; i < QCOM_PRIV_FLAGS_LEN; i++) {
 			memcpy(data, qcom_strings_priv_flags[i],
-				ETH_GSTRING_LEN);
+				(sizeof(qcom_strings_priv_flags[i]) > ETH_GSTRING_LEN)?ETH_GSTRING_LEN:sizeof(qcom_strings_priv_flags[i]));
 			data += ETH_GSTRING_LEN;
 		}
 		break;
@@ -287,7 +286,6 @@ int32_t qcom_get_strings(struct nss_gmac_hal_dev *nghd, int32_t sset,
 		netdev_dbg(netdev, "%s: Invalid string set\n", __func__);
 		return -EPERM;
 	}
-
 	return 0;
 }
 

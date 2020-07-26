@@ -17,6 +17,8 @@
  */
 
 #include <linux/ethtool.h>
+#include <linux/phy.h>
+#include <linux/version.h>
 #include "nss_dp_dev.h"
 #include "fal/fal_port_ctrl.h"
 
@@ -57,31 +59,18 @@ static void nss_dp_get_strings(struct net_device *netdev, uint32_t stringset,
  * nss_dp_get_settings()
  */
 static int32_t nss_dp_get_settings(struct net_device *netdev,
-				   struct ethtool_cmd *cmd)
+				   struct ethtool_link_ksettings *cmd)
 {
-	struct nss_dp_dev *dp_priv = (struct nss_dp_dev *)netdev_priv(netdev);
-
-	/*
-	 * If there is a PHY attached, get the status from Kernel helper
-	 */
-	if (dp_priv->phydev)
-		return phy_ethtool_gset(dp_priv->phydev, cmd);
-
-	return -EIO;
+	return phy_ethtool_get_link_ksettings(netdev, cmd);
 }
 
 /*
  * nss_dp_set_settings()
  */
-static int32_t nss_dp_set_settings(struct net_device *netdev,
-				  struct ethtool_cmd *cmd)
+static int nss_dp_set_settings(struct net_device *netdev,
+				  const struct ethtool_link_ksettings *cmd)
 {
-	struct nss_dp_dev *dp_priv = (struct nss_dp_dev *)netdev_priv(netdev);
-
-	if (!dp_priv->phydev)
-		return -EIO;
-
-	return phy_ethtool_sset(dp_priv->phydev, cmd);
+	return phy_ethtool_set_link_ksettings(netdev, cmd);
 }
 
 /*
@@ -92,6 +81,8 @@ static void nss_dp_get_pauseparam(struct net_device *netdev,
 {
 	struct nss_dp_dev *dp_priv = (struct nss_dp_dev *)netdev_priv(netdev);
 
+	pause->rx_pause = 0;
+	pause->tx_pause = 0;
 	pause->rx_pause = dp_priv->pause & FLOW_CTRL_RX ? 1 : 0;
 	pause->tx_pause = dp_priv->pause & FLOW_CTRL_TX ? 1 : 0;
 	pause->autoneg = AUTONEG_ENABLE;
@@ -116,6 +107,22 @@ static int32_t nss_dp_set_pauseparam(struct net_device *netdev,
 	if (!dp_priv->phydev)
 		return 0;
 
+#if (LINUX_VERSION_CODE > KERNEL_VERSION(5,4,0))
+	linkmode_clear_bit(ETHTOOL_LINK_MODE_Pause_BIT, 
+								dp_priv->phydev->advertising);
+	linkmode_clear_bit(ETHTOOL_LINK_MODE_Asym_Pause_BIT, 
+								dp_priv->phydev->advertising);
+
+	if (pause->rx_pause) {
+		linkmode_set_bit(ETHTOOL_LINK_MODE_Pause_BIT, dp_priv->phydev->advertising);
+		linkmode_set_bit(ETHTOOL_LINK_MODE_Asym_Pause_BIT, dp_priv->phydev->advertising);
+	}
+
+	if (pause->tx_pause) {
+		linkmode_set_bit(ETHTOOL_LINK_MODE_Asym_Pause_BIT, dp_priv->phydev->advertising);
+	}
+
+#else
 	/* Update flow control advertisment */
 	dp_priv->phydev->advertising &=
 				~(ADVERTISED_Pause | ADVERTISED_Asym_Pause);
@@ -126,6 +133,7 @@ static int32_t nss_dp_set_pauseparam(struct net_device *netdev,
 
 	if (pause->tx_pause)
 		dp_priv->phydev->advertising |= ADVERTISED_Asym_Pause;
+#endif
 
 	genphy_config_aneg(dp_priv->phydev);
 
@@ -311,8 +319,8 @@ struct ethtool_ops nss_dp_ethtool_ops = {
 	.get_sset_count = &nss_dp_get_strset_count,
 	.get_ethtool_stats = &nss_dp_get_ethtool_stats,
 	.get_link = &ethtool_op_get_link,
-	.get_settings = &nss_dp_get_settings,
-	.set_settings = &nss_dp_set_settings,
+	.get_link_ksettings = &nss_dp_get_settings,
+	.set_link_ksettings = &nss_dp_set_settings,
 	.get_pauseparam = &nss_dp_get_pauseparam,
 	.set_pauseparam = &nss_dp_set_pauseparam,
 	.get_eee = &nss_dp_get_eee,

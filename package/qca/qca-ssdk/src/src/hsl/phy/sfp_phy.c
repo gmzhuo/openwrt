@@ -155,7 +155,11 @@ void sfp_phy_device_remove(a_uint32_t dev_id, a_uint32_t port)
 	}
 
 	if (addr < PHY_MAX_ADDR)
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(5,4,0))
 		phydev = bus->phy_map[addr];
+#else
+		//phydev = to_phy_device(bus->mdio_map[addr]);
+#endif
 	if (phydev)
 		phy_device_remove(phydev);
 #endif

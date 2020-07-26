@@ -1036,14 +1036,14 @@ qca_ar8327_hw_init(struct qca_phy_priv *priv)
 
 #if defined(IN_SWCONFIG)
 #ifndef BOARD_AR71XX
-static int
+int
 qca_ar8327_sw_get_reg_val(struct switch_dev *dev,
                                     int reg, int *val)
 {
 	return 0;
 }
 
-static int
+int
 qca_ar8327_sw_set_reg_val(struct switch_dev *dev,
                                     int reg, int val)
 {
@@ -1084,12 +1084,14 @@ static struct switch_attr qca_ar8327_globals[] = {
 		.type = SWITCH_TYPE_STRING,
 		.get = qca_ar8327_sw_atu_dump,
 	},
+#if 0
 	{
 		.name = "switch_ext",
 		.description = "Switch extended configuration",
 		.type = SWITCH_TYPE_EXT,
 		.set = qca_ar8327_sw_switch_ext,
 	},
+#endif
 };
 
 static struct switch_attr qca_ar8327_port[] = {
@@ -1140,8 +1142,10 @@ const struct switch_dev_ops qca_ar8327_sw_ops = {
 	.reset_switch = qca_ar8327_sw_reset_switch,
 	.get_port_link = qca_ar8327_sw_get_port_link,
 #ifndef BOARD_AR71XX
+#if 0
 	.get_reg_val = qca_ar8327_sw_get_reg_val,
 	.set_reg_val = qca_ar8327_sw_set_reg_val,
+#endif
 #endif
 };
 #endif
@@ -1520,8 +1524,12 @@ qca_phy_config_init(struct phy_device *pdev)
 #else
 	if (pdev->addr != 0) {
 #endif
+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(5,4,0))
         pdev->supported |= SUPPORTED_1000baseT_Full;
         pdev->advertising |= ADVERTISED_1000baseT_Full;
+#else
+		//todo
+#endif
 #ifndef BOARD_AR71XX
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 		ssdk_phy_rgmii_set(priv);
@@ -1552,8 +1560,12 @@ qca_phy_config_init(struct phy_device *pdev)
 	if(ret)
 		priv->link_polling_required = 1;
 	pdev->priv = priv;
+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(5,4,0))
 	pdev->supported |= SUPPORTED_1000baseT_Full;
 	pdev->advertising |= ADVERTISED_1000baseT_Full;
+#else
+	//todo
+#endif
 
 #if defined(IN_SWCONFIG)
 	ret = qca_switchdev_register(priv);

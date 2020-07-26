@@ -32,6 +32,7 @@
  */
 static int nss_dp_attr_get(struct net_device *dev, struct switchdev_attr *attr)
 {
+#if 0
 	struct nss_dp_dev *dp_priv = (struct nss_dp_dev *)netdev_priv(dev);
 
 	switch (attr->id) {
@@ -45,7 +46,7 @@ static int nss_dp_attr_get(struct net_device *dev, struct switchdev_attr *attr)
 	default:
 		return -EOPNOTSUPP;
 	}
-
+#endif
 	return 0;
 }
 
@@ -202,6 +203,7 @@ static int nss_dp_attr_set(struct net_device *dev,
 				const struct switchdev_attr *attr,
 				struct switchdev_trans *trans)
 {
+#if 0
 	struct nss_dp_dev *dp_priv = (struct nss_dp_dev *)netdev_priv(dev);
 
 	if (switchdev_trans_ph_prepare(trans))
@@ -217,8 +219,10 @@ static int nss_dp_attr_set(struct net_device *dev,
 	default:
 		return -EOPNOTSUPP;
 	}
+#endif
 }
 
+#if 0
 /*
  * nss_dp_switchdev_ops
  *	Switchdev operations of NSS data plane.
@@ -227,6 +231,7 @@ static const struct switchdev_ops nss_dp_switchdev_ops = {
 	.switchdev_port_attr_get	= nss_dp_attr_get,
 	.switchdev_port_attr_set	= nss_dp_attr_set,
 };
+#endif
 
 /*
  * nss_dp_switchdev_setup()
@@ -234,8 +239,10 @@ static const struct switchdev_ops nss_dp_switchdev_ops = {
  */
 void nss_dp_switchdev_setup(struct net_device *dev)
 {
+#if 0
 #ifdef CONFIG_NET_SWITCHDEV
 	dev->switchdev_ops = &nss_dp_switchdev_ops;
 #endif
 	switchdev_port_fwd_mark_set(dev, NULL, false);
+#endif
 }

@@ -1054,6 +1054,7 @@ int qca808x_hwtstamp(struct phy_device *phydev, struct ifreq *ifr)
 		return -EFAULT;
 	}
 
+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(5,4,0))
 	pdata->step_mode = ptp_config.step_mode;
 	if (ptp_info->hwts_rx_type != PTP_CLASS_NONE) {
 		phydev->supported |= SUPPORTED_PTP;
@@ -1062,6 +1063,9 @@ int qca808x_hwtstamp(struct phy_device *phydev, struct ifreq *ifr)
 		phydev->supported &= ~SUPPORTED_PTP;
 		phydev->advertising &= ~SUPPORTED_PTP;
 	}
+#else
+	//todo
+#endif
 
 	return copy_to_user(ifr->ifr_data, &cfg, sizeof(cfg)) ? -EFAULT : 0;
 }
@@ -1346,7 +1350,7 @@ static int qca808x_ptp_register(struct phy_device *phydev)
 
 	mutex_init(&clock->tsreg_lock);
 	clock->caps.owner = THIS_MODULE;
-	snprintf(clock->caps.name, sizeof(clock->caps.name), "qca808x timer %x", phydev->addr);
+	snprintf(clock->caps.name, sizeof(clock->caps.name), "qca808x timer %x", phydev->mdio.addr);
 	clock->caps.max_adj	= 3124999;
 	clock->caps.n_alarm	= 0;
 	clock->caps.n_ext_ts	= 6;
@@ -1365,7 +1369,7 @@ static int qca808x_ptp_register(struct phy_device *phydev)
 	clock->caps.adjtime	= qca808x_ptp_adjtime;
 	clock->caps.enable	= qca808x_ptp_enable;
 
-	clock->ptp_clock = ptp_clock_register(&clock->caps, &phydev->dev);
+	clock->ptp_clock = ptp_clock_register(&clock->caps, &phydev->mdio.dev);
 	if (IS_ERR(clock->ptp_clock)) {
 		err = PTR_ERR(clock->ptp_clock);
 		kfree(clock);

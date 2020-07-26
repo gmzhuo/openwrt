@@ -308,6 +308,7 @@ static int32_t syn_get_strings(struct nss_gmac_hal_dev *nghd,
 
 	netdev = nghd->netdev;
 
+#if 0
 	switch (stringset) {
 	case ETH_SS_STATS:
 		for (i = 0; i < SYN_STATS_LEN; i++) {
@@ -329,6 +330,7 @@ static int32_t syn_get_strings(struct nss_gmac_hal_dev *nghd,
 		netdev_dbg(netdev, "%s: Invalid string set\n", __func__);
 		return -EPERM;
 	}
+#endif
 
 	return 0;
 }

@@ -242,7 +242,7 @@
 			};
 		};
 		ess-switch@3a000000 {
-			compatible = "qcom,ess-switch-ipq807x","qcom,ess-switch";
+			compatible = "qcom,ess-switch-ipq807x";
 			reg = <0x3a000000 0x1000000>;
 			switch_access_mode = "local bus";
 			switch_cpu_bmp = <0x1>;  /* cpu port bitmap */
@@ -801,7 +801,7 @@
 			reg = <0x3a001200 0x200>;
 			qcom,mactype = <0>;
 			local-mac-address = [000000000000];
-			//qcom,link-poll = <1>;
+			qcom,link-poll = <1>;
 			qcom,phy-mdio-addr = <1>;
 			phy-mode = "sgmii";
 		};
@@ -813,7 +813,7 @@
 			reg = <0x3a001400 0x200>;
 			qcom,mactype = <0>;
 			local-mac-address = [000000000000];
-			//qcom,link-poll = <1>;
+			qcom,link-poll = <1>;
 			qcom,phy-mdio-addr = <2>;
 			phy-mode = "sgmii";
 		};
@@ -825,7 +825,7 @@
 			reg = <0x3a001600 0x200>;
 			qcom,mactype = <0>;
 			local-mac-address = [000000000000];
-			//qcom,link-poll = <1>;
+			qcom,link-poll = <1>;
 			qcom,phy-mdio-addr = <3>;
 			phy-mode = "sgmii";
 		};
@@ -837,7 +837,7 @@
 			reg = <0x3a001800 0x200>;
 			qcom,mactype = <0>;
 			local-mac-address = [000000000000];
-			//qcom,link-poll = <1>;
+			qcom,link-poll = <1>;
 			qcom,phy-mdio-addr = <4>;
 			phy-mode = "sgmii";
 		};

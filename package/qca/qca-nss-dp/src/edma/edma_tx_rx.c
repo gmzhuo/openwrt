@@ -17,6 +17,7 @@
 #include <linux/interrupt.h>
 #include <linux/netdevice.h>
 #include <linux/debugfs.h>
+#include <linux/phy.h>
 
 #include "nss_dp_dev.h"
 #include "edma_regs.h"
@@ -374,7 +375,7 @@ static uint32_t edma_clean_rx(struct edma_hw *ehw,
 		skb->skb_iif = ndev->ifindex;
 		skb_put(skb, pkt_length);
 		skb->protocol = eth_type_trans(skb, skb->dev);
-#ifdef CONFIG_NET_SWITCHDEV
+#if 0//ifdef CONFIG_NET_SWITCHDEV
 		skb->offload_fwd_mark = ndev->offload_fwd_mark;
 		pr_debug("skb:%p ring_idx:%u pktlen:%d proto:0x%x mark:%u\n",
 			   skb, cons_idx, pkt_length, skb->protocol,

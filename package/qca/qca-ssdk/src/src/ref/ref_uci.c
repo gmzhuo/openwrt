@@ -13,7 +13,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-
+#if 0
 #include "sw.h"
 #include "ssdk_init.h"
 #include "fal_init.h"
@@ -11752,3 +11752,4 @@ qca_ar8327_sw_switch_ext(struct switch_dev *dev,
 #endif
 	return rv;
 }
+#endif

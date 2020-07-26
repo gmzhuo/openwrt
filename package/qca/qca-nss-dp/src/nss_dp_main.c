@@ -24,6 +24,7 @@
 #include <linux/of_irq.h>
 #include <linux/of_platform.h>
 #include <linux/of_address.h>
+#include <linux/phy.h>
 #if defined(NSS_DP_PPE_SUPPORT)
 #include <ref/ref_vsi.h>
 #endif
@@ -137,7 +138,7 @@ static int32_t nss_dp_set_mac_address(struct net_device *netdev, void *macaddr)
 /*
  * nss_dp_get_stats64()
  */
-static struct rtnl_link_stats64 *nss_dp_get_stats64(struct net_device *netdev,
+static void nss_dp_get_stats64(struct net_device *netdev,
 					     struct rtnl_link_stats64 *stats)
 {
 	struct nss_dp_dev *dp_priv;
@@ -148,8 +149,6 @@ static struct rtnl_link_stats64 *nss_dp_get_stats64(struct net_device *netdev,
 	dp_priv = (struct nss_dp_dev *)netdev_priv(netdev);
 
 	dp_priv->gmac_hal_ops->getndostats(dp_priv->gmac_hal_ctx, stats);
-
-	return stats;
 }
 
 /*
@@ -388,6 +387,7 @@ static const struct net_device_ops nss_dp_netdev_ops = {
 	.ndo_validate_addr = eth_validate_addr,
 	.ndo_change_mtu = nss_dp_change_mtu,
 	.ndo_do_ioctl = nss_dp_do_ioctl,
+#if 0
 	.ndo_bridge_setlink = switchdev_port_bridge_setlink,
 	.ndo_bridge_getlink = switchdev_port_bridge_getlink,
 	.ndo_bridge_dellink = switchdev_port_bridge_dellink,
@@ -395,6 +395,7 @@ static const struct net_device_ops nss_dp_netdev_ops = {
 	.ndo_rx_flow_steer = nss_dp_rx_flow_steer,
 #endif
 	.ndo_select_queue = nss_dp_select_queue,
+#endif
 };
 
 /*
@@ -446,7 +447,7 @@ static int32_t nss_dp_of_get_pdata(struct device_node *np,
 	of_property_read_u32(np, "qcom,forced-duplex", &dp_priv->forced_duplex);
 
 	maddr = (uint8_t *)of_get_mac_address(np);
-	if (maddr && is_valid_ether_addr(maddr)) {
+	if ((!IS_ERR(maddr)) && is_valid_ether_addr(maddr)) {
 		ether_addr_copy(netdev->dev_addr, maddr);
 	} else {
 		random_ether_addr(netdev->dev_addr);
@@ -556,8 +557,10 @@ static int32_t nss_dp_probe(struct platform_device *pdev)
 
 	dp_priv->pdev = pdev;
 	dp_priv->netdev = netdev;
+	netdev->dev.parent = &pdev->dev;
 	netdev->watchdog_timeo = 5 * HZ;
 	netdev->netdev_ops = &nss_dp_netdev_ops;
+
 	nss_dp_set_ethtool_ops(netdev);
 	nss_dp_switchdev_setup(netdev);
 
@@ -613,10 +616,12 @@ static int32_t nss_dp_probe(struct platform_device *pdev)
 			goto fail;
 		}
 
+#if 0
 		dp_priv->phydev->advertising |=
 				(ADVERTISED_Pause | ADVERTISED_Asym_Pause);
 		dp_priv->phydev->supported |=
 				(SUPPORTED_Pause | SUPPORTED_Asym_Pause);
+#endif
 	}
 
 #if defined(NSS_DP_PPE_SUPPORT)

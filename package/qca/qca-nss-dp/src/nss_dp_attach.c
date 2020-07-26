@@ -46,7 +46,7 @@ void nss_dp_receive(struct net_device *netdev, struct sk_buff *skb,
 			dp_dev->macid, skb->len, skb->ip_summed);
 
 #ifdef CONFIG_NET_SWITCHDEV
-	skb->offload_fwd_mark = netdev->offload_fwd_mark;
+	//skb->offload_fwd_mark = netdev->offload_fwd_mark;
 #endif
 
 	napi_gro_receive(napi, skb);
