@@ -235,6 +235,7 @@ static int32_t qcom_get_netdev_stats(struct nss_gmac_hal_dev *nghd,
 
 	stats->collisions = hal_stats->TxCollision;
 	stats->multicast = hal_stats->RxMulti;
+
 	return 0;
 }
 
@@ -286,6 +287,7 @@ int32_t qcom_get_strings(struct nss_gmac_hal_dev *nghd, int32_t sset,
 		netdev_dbg(netdev, "%s: Invalid string set\n", __func__);
 		return -EPERM;
 	}
+
 	return 0;
 }
 

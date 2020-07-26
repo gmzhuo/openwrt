@@ -13,7 +13,8 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-#if 0
+#include <linux/version.h>
+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(5,4,0))
 #include "sw.h"
 #include "ssdk_init.h"
 #include "fal_init.h"

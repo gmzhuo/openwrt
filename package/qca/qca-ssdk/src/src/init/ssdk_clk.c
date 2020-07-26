@@ -44,10 +44,13 @@ void ssdk_clock_rate_set_and_enable(
 	struct clk *clk;
 
 	clk = of_clk_get_by_name(node, clock_id);
+	printk("find clock %s %p\r\n", clock_id, clk);
 	if (!IS_ERR(clk)) {
+		printk("set rate\r\n");
 		if (rate)
 			clk_set_rate(clk, rate);
 
+		printk("enable\r\n");
 		clk_prepare_enable(clk);
 	}
 }
@@ -336,6 +339,7 @@ static void ssdk_ppe_uniphy_clock_init(void)
 static void ssdk_ppe_fixed_clock_init(void)
 {
 	/* AHB and sys clk */
+	printk("in ssdk_ppe_fixed_clock_init\r\n");
 	ssdk_clock_rate_set_and_enable(clock_node, CMN_AHB_CLK, 0);
 	ssdk_clock_rate_set_and_enable(clock_node, CMN_SYS_CLK, 0);
 	ssdk_clock_rate_set_and_enable(clock_node, UNIPHY0_AHB_CLK,
@@ -394,6 +398,8 @@ static void ssdk_ppe_fixed_clock_init(void)
 					NSS_IMEM_CLK, NSS_IMEM_RATE);
 	ssdk_clock_rate_set_and_enable(clock_node,
 					NSS_PTP_REF_CLK, PTP_REF_RARE);
+
+	printk("finish ssdk_ppe_fixed_clock_init\r\n");
 }
 
 #define CMN_BLK_ADDR	0x0009B780
@@ -456,9 +462,12 @@ void ssdk_ppe_clock_init(void)
 #if defined(CONFIG_OF) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
 	clock_node = of_find_node_by_name(NULL, "ess-switch");
 
+	printk("clock node goted\r\n");
 	ssdk_ppe_fixed_clock_init();
+	printk("ppe clock inited\r\n");
 	/*fixme for cmn clock init*/
 	ssdk_ppe_cmnblk_init();
+	printk("ppe cmnblk clock inited\r\n");
 	ssdk_ppe_uniphy_clock_init();
 #endif
 	SSDK_INFO("ppe and uniphy clock init successfully!\n");

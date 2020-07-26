@@ -289,7 +289,9 @@ a_uint32_t qca808x_negtiation_cap_get(unsigned long *advertise)
 
 static int qca808x_config_aneg(struct phy_device *phydev)
 {
+#if (LINUX_VERSION_CODE > KERNEL_VERSION(5,4,0))
 	__ETHTOOL_DECLARE_LINK_MODE_MASK(features) = {0};
+#endif
 	a_uint32_t advertise = 0;
 	a_uint16_t phy_data = 0;
 	int err = 0;
@@ -469,7 +471,12 @@ static int qca808x_phy_probe(struct phy_device *phydev)
 	}
 
 	priv->phydev = phydev;
+#if (LINUX_VERSION_CODE > KERNEL_VERSION(5,4,0))
 	priv->phy_info = qca808x_phy_info_get(phydev->mdio.addr);
+#else
+	priv->phy_info = qca808x_phy_info_get(phydev->addr);
+#endif
+
 	phydev->priv = priv;
 
 #if defined(IN_LINUX_STD_PTP)
@@ -494,7 +501,9 @@ struct phy_driver qca808x_phy_driver = {
 	.phy_id_mask    = 0xfffffff0,
 	.name		= "QCA808X ethernet",
 	.features	= PHY_GBIT_FEATURES,
-	//.flags		= PHY_HAS_INTERRUPT,
+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(5,4,0))
+	.flags		= PHY_HAS_INTERRUPT,
+#endif
 	.probe		= qca808x_phy_probe,
 	.remove		= qca808x_phy_remove,
 	.config_init	= qca808x_config_init,

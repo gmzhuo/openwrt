@@ -138,7 +138,13 @@ static int32_t nss_dp_set_mac_address(struct net_device *netdev, void *macaddr)
 /*
  * nss_dp_get_stats64()
  */
-static void nss_dp_get_stats64(struct net_device *netdev,
+static
+#if (LINUX_VERSION_CODE > KERNEL_VERSION(5,4,0))
+void
+#else
+struct rtnl_link_stats64 *
+#endif
+nss_dp_get_stats64(struct net_device *netdev,
 					     struct rtnl_link_stats64 *stats)
 {
 	struct nss_dp_dev *dp_priv;
@@ -149,6 +155,9 @@ static void nss_dp_get_stats64(struct net_device *netdev,
 	dp_priv = (struct nss_dp_dev *)netdev_priv(netdev);
 
 	dp_priv->gmac_hal_ops->getndostats(dp_priv->gmac_hal_ctx, stats);
+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(5,4,0))
+	return stats;
+#endif
 }
 
 /*
@@ -387,7 +396,7 @@ static const struct net_device_ops nss_dp_netdev_ops = {
 	.ndo_validate_addr = eth_validate_addr,
 	.ndo_change_mtu = nss_dp_change_mtu,
 	.ndo_do_ioctl = nss_dp_do_ioctl,
-#if 0
+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(5,4,0))
 	.ndo_bridge_setlink = switchdev_port_bridge_setlink,
 	.ndo_bridge_getlink = switchdev_port_bridge_getlink,
 	.ndo_bridge_dellink = switchdev_port_bridge_dellink,
@@ -560,7 +569,6 @@ static int32_t nss_dp_probe(struct platform_device *pdev)
 	netdev->dev.parent = &pdev->dev;
 	netdev->watchdog_timeo = 5 * HZ;
 	netdev->netdev_ops = &nss_dp_netdev_ops;
-
 	nss_dp_set_ethtool_ops(netdev);
 	nss_dp_switchdev_setup(netdev);
 

@@ -308,7 +308,6 @@ static int32_t syn_get_strings(struct nss_gmac_hal_dev *nghd,
 
 	netdev = nghd->netdev;
 
-#if 0
 	switch (stringset) {
 	case ETH_SS_STATS:
 		for (i = 0; i < SYN_STATS_LEN; i++) {
@@ -320,8 +319,8 @@ static int32_t syn_get_strings(struct nss_gmac_hal_dev *nghd,
 
 	case ETH_SS_PRIV_FLAGS:
 		for (i = 0; i < SYN_PRIV_FLAGS_LEN; i++) {
-			memcpy(data, syn_strings_priv_flags[i],
-				ETH_GSTRING_LEN);
+			//memcpy(data, syn_strings_priv_flags[i],
+			//	sizeof(syn_strings_priv_flags[i]));
 			data += ETH_GSTRING_LEN;
 		}
 
@@ -330,7 +329,6 @@ static int32_t syn_get_strings(struct nss_gmac_hal_dev *nghd,
 		netdev_dbg(netdev, "%s: Invalid string set\n", __func__);
 		return -EPERM;
 	}
-#endif
 
 	return 0;
 }

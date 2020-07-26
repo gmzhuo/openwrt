@@ -18,6 +18,7 @@
 
 #include <net/switchdev.h>
 #include <linux/if_bridge.h>
+#include <linux/version.h>
 #include "nss_dp_dev.h"
 #include "fal/fal_stp.h"
 #include "fal/fal_ctrlpkt.h"
@@ -32,7 +33,7 @@
  */
 static int nss_dp_attr_get(struct net_device *dev, struct switchdev_attr *attr)
 {
-#if 0
+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(5,4,0))
 	struct nss_dp_dev *dp_priv = (struct nss_dp_dev *)netdev_priv(dev);
 
 	switch (attr->id) {
@@ -46,6 +47,7 @@ static int nss_dp_attr_get(struct net_device *dev, struct switchdev_attr *attr)
 	default:
 		return -EOPNOTSUPP;
 	}
+
 #endif
 	return 0;
 }
@@ -203,7 +205,7 @@ static int nss_dp_attr_set(struct net_device *dev,
 				const struct switchdev_attr *attr,
 				struct switchdev_trans *trans)
 {
-#if 0
+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(5,4,0))
 	struct nss_dp_dev *dp_priv = (struct nss_dp_dev *)netdev_priv(dev);
 
 	if (switchdev_trans_ph_prepare(trans))
@@ -222,7 +224,7 @@ static int nss_dp_attr_set(struct net_device *dev,
 #endif
 }
 
-#if 0
+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(5,4,0))
 /*
  * nss_dp_switchdev_ops
  *	Switchdev operations of NSS data plane.
@@ -239,7 +241,7 @@ static const struct switchdev_ops nss_dp_switchdev_ops = {
  */
 void nss_dp_switchdev_setup(struct net_device *dev)
 {
-#if 0
+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(5,4,0))
 #ifdef CONFIG_NET_SWITCHDEV
 	dev->switchdev_ops = &nss_dp_switchdev_ops;
 #endif

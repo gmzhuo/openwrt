@@ -1084,7 +1084,7 @@ static struct switch_attr qca_ar8327_globals[] = {
 		.type = SWITCH_TYPE_STRING,
 		.get = qca_ar8327_sw_atu_dump,
 	},
-#if 0
+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(5,4,0))
 	{
 		.name = "switch_ext",
 		.description = "Switch extended configuration",
@@ -1142,7 +1142,7 @@ const struct switch_dev_ops qca_ar8327_sw_ops = {
 	.reset_switch = qca_ar8327_sw_reset_switch,
 	.get_port_link = qca_ar8327_sw_get_port_link,
 #ifndef BOARD_AR71XX
-#if 0
+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(5,4,0))
 	.get_reg_val = qca_ar8327_sw_get_reg_val,
 	.set_reg_val = qca_ar8327_sw_set_reg_val,
 #endif

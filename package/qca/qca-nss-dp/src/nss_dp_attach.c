@@ -15,7 +15,7 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  **************************************************************************
  */
-
+#include <linux/version.h>
 #include "nss_dp_dev.h"
 #include <nss_dp_api_if.h>
 
@@ -46,7 +46,9 @@ void nss_dp_receive(struct net_device *netdev, struct sk_buff *skb,
 			dp_dev->macid, skb->len, skb->ip_summed);
 
 #ifdef CONFIG_NET_SWITCHDEV
-	//skb->offload_fwd_mark = netdev->offload_fwd_mark;
+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(5,4,0))
+	skb->offload_fwd_mark = netdev->offload_fwd_mark;
+#endif
 #endif
 
 	napi_gro_receive(napi, skb);
