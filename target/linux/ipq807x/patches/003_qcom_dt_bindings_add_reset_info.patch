@@ -2,10 +2,27 @@ Index: linux-5.4.52/drivers/clk/qcom/gcc-ipq8074.c
 ===================================================================
 --- linux-5.4.52.orig/drivers/clk/qcom/gcc-ipq8074.c
 +++ linux-5.4.52/drivers/clk/qcom/gcc-ipq8074.c
-@@ -4744,6 +4744,20 @@ static const struct qcom_reset_map gcc_i
+@@ -11,6 +11,7 @@
+ #include <linux/of_device.h>
+ #include <linux/clk-provider.h>
+ #include <linux/regmap.h>
++#include <soc/qcom/socinfo.h>
+ 
+ #include <dt-bindings/clock/qcom,gcc-ipq8074.h>
+ 
+@@ -4736,7 +4737,6 @@ static const struct qcom_reset_map gcc_i
+ 	[GCC_PCIE0_AXI_SLAVE_ARES] = { 0x75040, 4 },
+ 	[GCC_PCIE0_AHB_ARES] = { 0x75040, 5 },
+ 	[GCC_PCIE0_AXI_MASTER_STICKY_ARES] = { 0x75040, 6 },
+-	[GCC_PCIE0_AXI_SLAVE_STICKY_ARES] = { 0x75040, 7 },
+ 	[GCC_PCIE1_PIPE_ARES] = { 0x76040, 0 },
+ 	[GCC_PCIE1_SLEEP_ARES] = { 0x76040, 1 },
+ 	[GCC_PCIE1_CORE_STICKY_ARES] = { 0x76040, 2 },
+@@ -4744,6 +4744,21 @@ static const struct qcom_reset_map gcc_i
  	[GCC_PCIE1_AXI_SLAVE_ARES] = { 0x76040, 4 },
  	[GCC_PCIE1_AHB_ARES] = { 0x76040, 5 },
  	[GCC_PCIE1_AXI_MASTER_STICKY_ARES] = { 0x76040, 6 },
++	[GCC_PCIE0_AXI_SLAVE_STICKY_ARES] = { 0x75040, 7 },
 +	[GCC_PPE_FULL_RESET] = { 0x68014, 0, 0xf0000},
 +	[GCC_UNIPHY0_SOFT_RESET] = { 0x56004, 0, 0x3ff2},
 +	[GCC_UNIPHY0_XPCS_RESET] = { 0x56004, 2 },
@@ -23,6 +40,32 @@ Index: linux-5.4.52/drivers/clk/qcom/gcc-ipq8074.c
  };
  
  static const struct of_device_id gcc_ipq8074_match_table[] = {
+@@ -4770,8 +4785,25 @@ static const struct qcom_cc_desc gcc_ipq
+ 	.num_clk_hws = ARRAY_SIZE(gcc_ipq8074_hws),
+ };
+ 
++#define CLK_IS_ROOT             BIT(4)
++
+ static int gcc_ipq8074_probe(struct platform_device *pdev)
+ {
++	const int *soc_version_major;
++	struct device *dev = &pdev->dev;
++	soc_version_major = read_ipq_soc_version_major();
++	BUG_ON(!soc_version_major);
++
++	pr_info("Soc version %d\n", *soc_version_major);
++
++	if (*soc_version_major != 1) {
++		 clk_register_fixed_rate(dev, "pcie20_phy0_pipe_clk", NULL, CLK_IS_ROOT,
++                                      250000000);
++	} else {
++		 clk_register_fixed_rate(dev, "pcie20_phy0_pipe_clk", NULL, CLK_IS_ROOT,
++                                      125000000);
++	}
++
+ 	return qcom_cc_probe(pdev, &gcc_ipq8074_desc);
+ }
+ 
 Index: linux-5.4.52/include/dt-bindings/clock/qcom,gcc-ipq8074.h
 ===================================================================
 --- linux-5.4.52.orig/include/dt-bindings/clock/qcom,gcc-ipq8074.h
@@ -61,3 +104,35 @@ Index: linux-5.4.52/include/dt-bindings/clock/qcom,gcc-ipq8074.h
 +#define GCC_NSSPORT6_RESET                      145
  
  #endif
+Index: linux-5.4.52/drivers/clk/qcom/reset.c
+===================================================================
+--- linux-5.4.52.orig/drivers/clk/qcom/reset.c
++++ linux-5.4.52/drivers/clk/qcom/reset.c
+@@ -29,6 +29,7 @@ qcom_reset_assert(struct reset_controlle
+ 	rst = to_qcom_reset_controller(rcdev);
+ 	map = &rst->reset_map[id];
+ 	mask = BIT(map->bit);
++	mask = map->bitmask ? map->bitmask : BIT(map->bit);
+ 
+ 	return regmap_update_bits(rst->regmap, map->reg, mask, mask);
+ }
+@@ -43,6 +44,7 @@ qcom_reset_deassert(struct reset_control
+ 	rst = to_qcom_reset_controller(rcdev);
+ 	map = &rst->reset_map[id];
+ 	mask = BIT(map->bit);
++	mask = map->bitmask ? map->bitmask : BIT(map->bit);
+ 
+ 	return regmap_update_bits(rst->regmap, map->reg, mask, 0);
+ }
+Index: linux-5.4.52/drivers/clk/qcom/reset.h
+===================================================================
+--- linux-5.4.52.orig/drivers/clk/qcom/reset.h
++++ linux-5.4.52/drivers/clk/qcom/reset.h
+@@ -11,6 +11,7 @@
+ struct qcom_reset_map {
+ 	unsigned int reg;
+ 	u8 bit;
++	u32 bitmask;
+ };
+ 
+ struct regmap;
