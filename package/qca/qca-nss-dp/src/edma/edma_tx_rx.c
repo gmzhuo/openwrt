@@ -508,6 +508,9 @@ int edma_napi(struct napi_struct *napi, int budget)
 						edma_hw.rxfill_intr_mask);
 		}
 	}
+
+	if(work_done > budget)
+		return budget;
 	return work_done;
 }
 
