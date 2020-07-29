@@ -24,6 +24,12 @@
 		device_type = "memory";
 		reg = <0x0 0x40000000 0x0 0x20000000>;
 	};
+	
+	tcsr_mutex: hwlock {
+		compatible = "qcom,tcsr-mutex";
+		syscon = <&tcsr_mutex_regs 0 0x80>;
+		#hwlock-cells = <1>;
+	};
 
 	reserved-memory {
                 #address-cells = <2>;
@@ -64,11 +70,18 @@
                         no-map;
                         reg = <0x0 0x4e700000 0x0 0x100000>;
                 };
-				wifi_dump@50500000 {
+
+		wifi_dump@50500000 {
                         no-map;
                         reg = <0x0 0x50500000 0x0 0x200000>;
                 };
         };
+        
+        smem {
+		compatible = "qcom,smem";
+		memory-region = <&smem_region>;
+		hwlocks = <&tcsr_mutex 0>;
+	};
 
 	soc {
 		pinctrl@1000000 {
@@ -122,47 +135,27 @@
 		};
 
 
+		tcsr_mutex_regs: syscon@1905000 {
+			compatible = "syscon";
+			reg = <0x01905000 0x8000>;
+		};
 
 		apcs: syscon@b111000 {
                         compatible = "syscon";
                         reg = <0x0B111000 0x1000>;
                 };
+
 		tcsr_q6_block: syscon@1945000 {
                         compatible = "syscon";
                         reg = <0x1945000 0xE000>;
                 };
-		apcs_glb: mailbox@b111000 {
-                        compatible = "qcom,msm8996-apcs-hmss-global";
-                        qcom,ipc = <&apcs 8 8>;
 
-                        #mbox-cells = <1>;
-                };
+                apcs_glb: mailbox@b111000 {
+			compatible = "qcom,ipq8074-apcs-apps-global";
+			reg = <0x0b111000 0xc>;
 
-		wcss: smp2p-wcss {
-                        compatible = "qcom,smp2p";
-                        qcom,smem = <435>, <428>;
-
-                        interrupt-parent = <&intc>;
-                        interrupts = <0 322 1>;
-
-                        qcom,ipc = <&apcs 8 9>;
-
-                        qcom,local-pid = <0>;
-                        qcom,remote-pid = <1>;
-
-                        wcss_smp2p_out: master-kernel {
-                                qcom,entry-name = "master-kernel";
-                                qcom,smp2p-feature-ssr-ack;
-                                #qcom,smem-state-cells = <1>;
-                        };
-
-                        wcss_smp2p_in: slave-kernel {
-                                qcom,entry-name = "slave-kernel";
-
-                                interrupt-controller;
-                                #interrupt-cells = <2>;
-                        };
-                };
+			#mbox-cells = <1>;
+		};
 
 		serial@78b3000 {
 			status = "ok";
@@ -957,6 +950,9 @@
                                 "wcss_reset",
                                 "wcss_q6_reset";
 
+			clocks = <&gcc GCC_PRNG_AHB_CLK>;
+			clock-names = "prng";
+
                         qcom,halt-regs = <&tcsr_q6_block 0xA000 0xD000 0x0>;
 
                         qcom,smem-states = <&wcss_smp2p_out 0>,
@@ -977,9 +973,9 @@
                         };
                 };
 
-		wifi0: wifi@c000000 {
+		wifi0: wifi@D000000 {
 			compatible = "qcom,ipq8074-wifi";
-			reg = <0xc000000 0x2000000>;
+			reg = <0xD000000 0x2000000>;
 			interrupts = <0 320 1>,
                      <0 319 1>,
                      <0 318 1>,
@@ -1089,6 +1085,30 @@
 
 	};
 
+	wcss: smp2p-wcss {
+		compatible = "qcom,smp2p";
+		qcom,smem = <435>, <428>;
+
+		interrupt-parent = <&intc>;
+		interrupts = <GIC_SPI 322 IRQ_TYPE_EDGE_RISING>;
+
+		mboxes = <&apcs_glb 9>;
+
+		qcom,local-pid = <0>;
+		qcom,remote-pid = <1>;
+
+		wcss_smp2p_out: master-kernel {
+			qcom,entry-name = "master-kernel";
+			#qcom,smem-state-cells = <1>;
+		};
+
+		wcss_smp2p_in: slave-kernel {
+			qcom,entry-name = "slave-kernel";
+			interrupt-controller;
+			#interrupt-cells = <2>;
+		};
+	};
+	
 	leds {
 		compatible = "gpio-leds";
 		pinctrl-0 = <&led_pins>;
