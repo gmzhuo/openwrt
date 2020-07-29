@@ -1,0 +1,17 @@
+--- a/drivers/net/wireless/ath/ath11k/ahb.c
++++ b/drivers/net/wireless/ath/ath11k/ahb.c
+@@ -914,7 +914,13 @@ static const struct ath5k_ini ar5210_ini
+ 		return -EINVAL;
+ 	}
+ 
+-	mem = devm_platform_get_and_ioremap_resource(pdev, 0, &mem_res);
++	mem_res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	if (!mem_res) {
++		dev_err(&pdev->dev, "failed to get IO memory resource\n");
++		return -ENXIO;
++	}
++
++	mem = devm_ioremap_resource(&pdev->dev, mem_res);
+ 	if (IS_ERR(mem)) {
+ 		dev_err(&pdev->dev, "ioremap error\n");
+ 		return PTR_ERR(mem);
