@@ -978,11 +978,11 @@
 				qcom,remote-pid = <1>;
 				mboxes = <&apcs_glb 8>;
 
-				rpm_requests {
+				qrtr_requests {
 					qcom,glink-channels = "IPCRTR";
 				};
 			};
-		};
+                };
 
 		wifi0: wifi@D000000 {
 			compatible = "qcom,ipq8074-wifi";
