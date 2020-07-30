@@ -56,4 +56,3 @@ endef
 
 
 $(eval $(call BuildPackage,ath11k-firmware-ipq8074))
-
