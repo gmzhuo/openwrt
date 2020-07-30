@@ -984,7 +984,7 @@
 			};
                 };
 
-		wifi0: wifi@D000000 {
+		wifi0: wifi@c000000 {
 			compatible = "qcom,ipq8074-wifi";
 			reg = <0xc000000 0x2000000>;
 			interrupts = <0 320 1>,
