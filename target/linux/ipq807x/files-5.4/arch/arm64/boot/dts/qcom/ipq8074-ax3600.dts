@@ -963,17 +963,17 @@
                         memory-region = <&q6_region>;
 
 			glink-edge {
-                                interrupts = <GIC_SPI 321 IRQ_TYPE_EDGE_RISING>;
-                                qcom,remote-pid = <1>;
-                                mboxes = <&apcs_glb 8>;
+				interrupts = <GIC_SPI 321 IRQ_TYPE_EDGE_RISING>;
+				qcom,remote-pid = <1>;
+				mboxes = <&apcs_glb 8>;
 
-                                rpm_requests {
-                                        qcom,glink-channels = "IPCRTR";
-                                };
-                        };
+				qrtr_requests {
+					qcom,glink-channels = "IPCRTR";
+				};
+			};
                 };
 
-		wifi0: wifi@D000000 {
+		wifi0: wifi@C000000 {
 			compatible = "qcom,ipq8074-wifi";
 			reg = <0xD000000 0x2000000>;
 			interrupts = <0 320 1>,

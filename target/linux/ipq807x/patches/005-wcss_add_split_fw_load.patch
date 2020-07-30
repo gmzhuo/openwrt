@@ -20,7 +20,7 @@
  struct q6v5_wcss {
  	struct device *dev;
  
-@@ -86,11 +90,14 @@ struct q6v5_wcss {
+@@ -86,11 +90,17 @@ struct q6v5_wcss {
  	struct reset_control *wcss_q6_reset;
  
  	struct qcom_q6v5 q6v5;
@@ -33,10 +33,13 @@
 +
 +	bool need_mem_protection;
 +	const char *m3_firmware_name;
++	
++	struct qcom_rproc_glink glink_subdev;
++	struct qcom_rproc_ssr ssr_subdev;
  };
  
  static int q6v5_wcss_reset(struct q6v5_wcss *wcss)
-@@ -181,8 +188,25 @@ static int q6v5_wcss_start(struct rproc
+@@ -181,8 +191,25 @@ static int q6v5_wcss_start(struct rproc
  {
  	struct q6v5_wcss *wcss = rproc->priv;
  	int ret;
@@ -62,7 +65,7 @@
  
  	/* Release Q6 and WCSS reset */
  	ret = reset_control_deassert(wcss->wcss_reset);
-@@ -218,6 +242,7 @@ static int q6v5_wcss_start(struct rproc
+@@ -218,6 +245,7 @@ static int q6v5_wcss_start(struct rproc
  	if (ret)
  		goto wcss_q6_reset;
  
@@ -70,7 +73,7 @@
  	ret = qcom_q6v5_wait_for_start(&wcss->q6v5, 5 * HZ);
  	if (ret == -ETIMEDOUT)
  		dev_err(wcss->dev, "start timed out\n");
-@@ -385,6 +410,16 @@ static int q6v5_wcss_stop(struct rproc *
+@@ -385,6 +413,16 @@ static int q6v5_wcss_stop(struct rproc *
  	struct q6v5_wcss *wcss = rproc->priv;
  	int ret;
  
@@ -87,7 +90,7 @@
  	/* WCSS powerdown */
  	ret = qcom_q6v5_request_stop(&wcss->q6v5);
  	if (ret == -ETIMEDOUT) {
-@@ -400,7 +435,8 @@ static int q6v5_wcss_stop(struct rproc *
+@@ -400,7 +438,8 @@ static int q6v5_wcss_stop(struct rproc *
  	ret = q6v5_q6_powerdown(wcss);
  	if (ret)
  		return ret;
@@ -97,20 +100,20 @@
  	qcom_q6v5_unprepare(&wcss->q6v5);
  
  	return 0;
-@@ -421,7 +457,36 @@ static void *q6v5_wcss_da_to_va(struct r
+@@ -421,7 +460,36 @@ static void *q6v5_wcss_da_to_va(struct r
  static int q6v5_wcss_load(struct rproc *rproc, const struct firmware *fw)
  {
  	struct q6v5_wcss *wcss = rproc->priv;
 +	const struct firmware *m3_fw;
 +	int ret;
-+
+ 
 +	ret = request_firmware(&m3_fw, wcss->m3_firmware_name,
 +				       wcss->dev);
 +	printk("Q6V5 use request_firmware\n");
 +	
 +	if (ret)
 +		goto skip_m3;
- 
++
 +	printk("Q6V5 m3 use qcom_mdt_load_no_init\n");
 +	ret = qcom_mdt_load_no_init(wcss->dev, m3_fw,
 +				    wcss->m3_firmware_name, 0,
@@ -134,7 +137,22 @@
  	return qcom_mdt_load_no_init(wcss->dev, fw, rproc->firmware,
  				     0, wcss->mem_region, wcss->mem_phys,
  				     wcss->mem_size, &wcss->mem_reloc);
-@@ -541,6 +606,21 @@ static int q6v5_wcss_probe(struct platfo
+@@ -468,12 +536,12 @@ static int q6v5_wcss_init_mmio(struct q6
+ 	int ret;
+ 
+ 	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "qdsp6");
+-	wcss->reg_base = devm_ioremap_resource(&pdev->dev, res);
++	wcss->reg_base = ioremap(res->start, resource_size(res));
+ 	if (IS_ERR(wcss->reg_base))
+ 		return PTR_ERR(wcss->reg_base);
+ 
+ 	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "rmb");
+-	wcss->rmb_base = devm_ioremap_resource(&pdev->dev, res);
++	wcss->rmb_base = ioremap(res->start, resource_size(res));
+ 	if (IS_ERR(wcss->rmb_base))
+ 		return PTR_ERR(wcss->rmb_base);
+ 
+@@ -541,6 +609,21 @@ static int q6v5_wcss_probe(struct platfo
  	wcss = rproc->priv;
  	wcss->dev = &pdev->dev;
  
@@ -156,3 +174,13 @@
  	ret = q6v5_wcss_init_mmio(wcss, pdev);
  	if (ret)
  		goto free_rproc;
+@@ -556,6 +639,9 @@ static int q6v5_wcss_probe(struct platfo
+ 	ret = qcom_q6v5_init(&wcss->q6v5, pdev, rproc, WCSS_CRASH_REASON, NULL);
+ 	if (ret)
+ 		goto free_rproc;
++		
++	qcom_add_glink_subdev(rproc, &wcss->glink_subdev);
++	qcom_add_ssr_subdev(rproc, &wcss->ssr_subdev, "q6wcss");
+ 
+ 	ret = rproc_add(rproc);
+ 	if (ret)
