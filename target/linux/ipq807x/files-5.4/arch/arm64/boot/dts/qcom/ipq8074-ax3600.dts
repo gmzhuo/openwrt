@@ -982,7 +982,15 @@
 					qcom,glink-channels = "IPCRTR";
 				};
 			};
-                };
+		};
+
+		qcom_rng: qrng@e1000 {
+			compatible = "qcom,prng-ipq807x";
+			reg = <0xe3000 0x1000>;
+			clocks = <&gcc GCC_PRNG_AHB_CLK>;
+			clock-names = "core";
+			status = "ok";
+		};
 
 		wifi0: wifi@c000000 {
 			compatible = "qcom,ipq8074-wifi";

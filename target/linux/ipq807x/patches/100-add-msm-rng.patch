@@ -1,0 +1,33 @@
+Index: linux-5.4.52/drivers/char/hw_random/Kconfig
+===================================================================
+--- linux-5.4.52.orig/drivers/char/hw_random/Kconfig
++++ linux-5.4.52/drivers/char/hw_random/Kconfig
+@@ -440,6 +440,19 @@ config HW_RANDOM_OPTEE
+ 
+ 	  If unsure, say Y.
+ 
++config HW_RANDOM_MSM
++	tristate "Qualcomm SoCs Random Number Generator support"
++	depends on HW_RANDOM && ARCH_QCOM
++	default HW_RANDOM
++	---help---
++	  This driver provides kernel-side support for the Random Number
++	  Generator hardware found on Qualcomm SoCs.
++
++	  To compile this driver as a module, choose M here. the
++	  module will be called msm-rng.
++
++	  If unsure, say Y.
++
+ endif # HW_RANDOM
+ 
+ config UML_RANDOM
+Index: linux-5.4.52/drivers/char/hw_random/Makefile
+===================================================================
+--- linux-5.4.52.orig/drivers/char/hw_random/Makefile
++++ linux-5.4.52/drivers/char/hw_random/Makefile
+@@ -39,3 +39,4 @@ obj-$(CONFIG_HW_RANDOM_MTK)	+= mtk-rng.o
+ obj-$(CONFIG_HW_RANDOM_S390) += s390-trng.o
+ obj-$(CONFIG_HW_RANDOM_KEYSTONE) += ks-sa-rng.o
+ obj-$(CONFIG_HW_RANDOM_OPTEE) += optee-rng.o
++obj-$(CONFIG_HW_RANDOM_MSM) += msm-rng.o
