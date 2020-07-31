@@ -1,0 +1,114 @@
+Index: linux-5.4.52/arch/arm64/mm/flush.c
+===================================================================
+--- linux-5.4.52.orig/arch/arm64/mm/flush.c
++++ linux-5.4.52/arch/arm64/mm/flush.c
+@@ -14,6 +14,19 @@
+ #include <asm/cache.h>
+ #include <asm/tlbflush.h>
+ 
++/*
++ * Cache maintenance functions used by the DMA API. No to be used directly.
++ */
++extern void __dma_map_area(const void *, size_t, int);
++extern void __dma_unmap_area(const void *, size_t, int);
++extern void __dma_flush_range(const void *, const void *);
++extern void __dma_inv_area(const void *, const void *);
++extern void __dma_clean_range(const void *, const void *);
++
++extern void dmac_flush_range(const void *, const void *);
++extern void dmac_inv_range(const void *, const void *);
++extern void dmac_clean_range(const void *, const void *);
++
+ void sync_icache_aliases(void *kaddr, unsigned long len)
+ {
+ 	unsigned long addr = (unsigned long)kaddr;
+@@ -77,6 +90,23 @@ EXPORT_SYMBOL(flush_dcache_page);
+  */
+ EXPORT_SYMBOL(__flush_icache_range);
+ 
++void dmac_flush_range(const void *start, const void *end)
++{
++	__dma_flush_range(start, end);
++}
++EXPORT_SYMBOL(dmac_flush_range);
++
++void dmac_inv_range(const void *start, const void *end)
++{
++	__dma_inv_area(start, end);
++}
++EXPORT_SYMBOL(dmac_inv_range);
++
++void dmac_clean_range(const void *start, const void *end)
++{
++	__dma_clean_range(start, end);
++}
++
+ #ifdef CONFIG_ARCH_HAS_PMEM_API
+ void arch_wb_cache_pmem(void *addr, size_t size)
+ {
+@@ -91,4 +121,5 @@ void arch_invalidate_pmem(void *addr, si
+ 	__inval_dcache_area(addr, size);
+ }
+ EXPORT_SYMBOL_GPL(arch_invalidate_pmem);
++
+ #endif
+Index: linux-5.4.52/arch/arm64/mm/cache.S
+===================================================================
+--- linux-5.4.52.orig/arch/arm64/mm/cache.S
++++ linux-5.4.52/arch/arm64/mm/cache.S
+@@ -146,7 +146,8 @@ ENTRY(__inval_dcache_area)
+  *	- start   - virtual start address of region
+  *	- size    - size in question
+  */
+-__dma_inv_area:
++ENTRY(__dma_inv_area)
++//__dma_inv_area:
+ 	add	x1, x1, x0
+ 	dcache_line_size x2, x3
+ 	sub	x3, x2, #1
+@@ -169,6 +170,45 @@ ENDPIPROC(__inval_dcache_area)
+ ENDPROC(__dma_inv_area)
+ 
+ /*
++ *      __dma_clean_range(start, end)
++ *      - start   - virtual start address of region
++ *      - end     - virtual end address of region
++ */
++ENTRY(__dma_clean_range)
++        dcache_line_size x2, x3
++        sub     x3, x2, #1
++        bic     x0, x0, x3
++1:
++alternative_if_not ARM64_WORKAROUND_CLEAN_CACHE
++        dc      cvac, x0
++alternative_else
++        dc      civac, x0
++alternative_endif
++        add     x0, x0, x2
++        cmp     x0, x1
++        b.lo    1b
++        dsb     sy
++        ret
++ENDPROC(__dma_clean_range)
++
++/*
++ *      __dma_flush_range(start, end)
++ *      - start   - virtual start address of region
++ *      - end     - virtual end address of region
++ */
++ENTRY(__dma_flush_range)
++        dcache_line_size x2, x3
++        sub     x3, x2, #1
++        bic     x0, x0, x3
++1:      dc      civac, x0                       // clean & invalidate D / U line
++        add     x0, x0, x2
++        cmp     x0, x1
++        b.lo    1b
++        dsb     sy
++        ret
++ENDPIPROC(__dma_flush_range)
++
++/*
+  *	__clean_dcache_area_poc(kaddr, size)
+  *
+  * 	Ensure that any D-cache lines for the interval [kaddr, kaddr+size)
