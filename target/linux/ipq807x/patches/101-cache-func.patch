@@ -22,7 +22,7 @@ Index: linux-5.4.52/arch/arm64/mm/flush.c
  void sync_icache_aliases(void *kaddr, unsigned long len)
  {
  	unsigned long addr = (unsigned long)kaddr;
-@@ -77,6 +90,23 @@ EXPORT_SYMBOL(flush_dcache_page);
+@@ -77,6 +90,24 @@ EXPORT_SYMBOL(flush_dcache_page);
   */
  EXPORT_SYMBOL(__flush_icache_range);
  
@@ -42,16 +42,11 @@ Index: linux-5.4.52/arch/arm64/mm/flush.c
 +{
 +	__dma_clean_range(start, end);
 +}
++EXPORT_SYMBOL(dmac_clean_range);
 +
  #ifdef CONFIG_ARCH_HAS_PMEM_API
  void arch_wb_cache_pmem(void *addr, size_t size)
  {
-@@ -91,4 +121,5 @@ void arch_invalidate_pmem(void *addr, si
- 	__inval_dcache_area(addr, size);
- }
- EXPORT_SYMBOL_GPL(arch_invalidate_pmem);
-+
- #endif
 Index: linux-5.4.52/arch/arm64/mm/cache.S
 ===================================================================
 --- linux-5.4.52.orig/arch/arm64/mm/cache.S
