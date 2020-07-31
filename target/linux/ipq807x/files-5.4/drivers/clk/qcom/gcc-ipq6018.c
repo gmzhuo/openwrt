@@ -4328,7 +4328,7 @@ static struct clk_regmap *gcc_ipq6018_clks[] = {
 	[GCC_DCC_CLK] = &gcc_dcc_clk.clkr,
 	[PCIE0_RCHNG_CLK_SRC] = &pcie0_rchng_clk_src.clkr,
 	[GCC_PCIE0_AXI_S_BRIDGE_CLK] = &gcc_pcie0_axi_s_bridge_clk.clkr,
-	[PCIE0_RCHNG_CLK] = &gcc_pcie0_rchng_clk.clkr,
+	[GCC_PCIE0_RCHNG_CLK] = &gcc_pcie0_rchng_clk.clkr,
 };
 
 static struct clk_regmap *gcc_ipq6018_dummy_clks[] = {
@@ -4530,7 +4530,7 @@ static struct clk_regmap *gcc_ipq6018_dummy_clks[] = {
 	[GCC_DCC_CLK] = DEFINE_DUMMY_CLK(gcc_dcc_clk),
 	[PCIE0_RCHNG_CLK_SRC] = DEFINE_DUMMY_CLK(pcie0_rchng_clk_src),
 	[GCC_PCIE0_AXI_S_BRIDGE_CLK] = DEFINE_DUMMY_CLK(gcc_pcie0_axi_s_bridge_clk),
-	[PCIE0_RCHNG_CLK] = DEFINE_DUMMY_CLK(gcc_pcie0_rchng_clk),
+	[GCC_PCIE0_RCHNG_CLK] = DEFINE_DUMMY_CLK(gcc_pcie0_rchng_clk),
 };
 
 static const struct qcom_reset_map gcc_ipq6018_resets[] = {

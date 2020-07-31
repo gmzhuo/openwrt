@@ -21,25 +21,6 @@ index 519dc047f..d4f883328 100644
  			reg = <0x1800000 0x80000>;
  			#clock-cells = <0x1>;
  			#reset-cells = <0x1>;
-@@ -344,16 +345,14 @@
- 				 <&gcc GCC_PCIE0_AXI_S_CLK>,
- 				 <&gcc GCC_PCIE0_AHB_CLK>,
- 				 <&gcc GCC_PCIE0_AUX_CLK>,
--				 <&gcc GCC_PCIE0_AXI_S_BRIDGE_CLK>,
--				 <&gcc GCC_PCIE0_RCHNG_CLK>;
-+				 <&gcc GCC_PCIE0_AXI_S_BRIDGE_CLK>;
- 
- 			clock-names = "iface",
- 				      "axi_m",
- 				      "axi_s",
- 				      "ahb",
- 				      "aux",
--				      "axi_bridge",
--				      "rchng";
-+				      "axi_bridge";
- 			resets = <&gcc GCC_PCIE0_PIPE_ARES>,
- 				 <&gcc GCC_PCIE0_SLEEP_ARES>,
- 				 <&gcc GCC_PCIE0_CORE_STICKY_ARES>,
 diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
 index 36e9f38a3..9ee560f84 100644
 --- a/drivers/clk/clk.c

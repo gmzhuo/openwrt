@@ -5341,7 +5341,7 @@ static struct clk_regmap *gcc_ipq807x_clks[] = {
 	[GCC_DCC_CLK] = &gcc_dcc_clk.clkr,
 	[PCIE0_RCHNG_CLK_SRC] = &pcie0_rchng_clk_src.clkr,
 	[GCC_PCIE0_AXI_S_BRIDGE_CLK] = &gcc_pcie0_axi_s_bridge_clk.clkr,
-	[PCIE0_RCHNG_CLK] = &gcc_pcie0_rchng_clk.clkr,
+	[GCC_PCIE0_RCHNG_CLK] = &gcc_pcie0_rchng_clk.clkr,
 };
 
 static struct clk_regmap *gcc_ipq807x_v2_clks[] = {
