@@ -1,0 +1,29 @@
+#!/bin/sh
+
+[ -e /lib/firmware/$FIRMWARE ] && exit 0
+
+. /lib/functions/caldata.sh
+
+case "$FIRMWARE" in
+"IPQ8074/caldata.bin")
+	export FILESIZE=131072
+	HK_BD_FILENAME=/lib/firmware/IPQ8074/bdwlan.bin
+	mkdir -p /lib/firmware/IPQ8074/
+
+	export mtdblock=$(find_mtd_part 0:ART)
+	if [ -z "$mtdblock" ]; then
+		# read from mmc
+		mtdblock=$(find_mmc_part 0:ART)
+	fi
+
+	if [ -f "$HK_BD_FILENAME" ]; then
+		FILESIZE=$(stat -Lc%s "$HK_BD_FILENAME")
+	fi
+
+	dd if=$mtdblock of=/lib/firmware/$FIRMWARE bs=1 count=$FILESIZE skip=4096
+	;;
+*)
+	exit 1
+	;;
+esac
+
