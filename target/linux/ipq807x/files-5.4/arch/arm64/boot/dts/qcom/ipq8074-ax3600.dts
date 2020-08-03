@@ -11,6 +11,12 @@
 	compatible = "qcom,ipq807x-ac04", "qcom,ipq807x";
 	interrupt-parent = <&intc>;
 
+	firmware {
+		scm {
+			compatible = "qcom,scm-ipq8074", "qcom,scm";
+		};
+	};
+
 	aliases {
 		serial0 = &blsp1_uart5;
 		serial1 = &blsp1_uart3;
