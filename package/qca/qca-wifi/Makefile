@@ -5,44 +5,11 @@ PKG:=qca-wifi
 PKG_NAME:=$(PKG)
 PKG_RELEASE:=1
 
-DRIVER_PATH:=$(TOPDIR)/qca/src/qca-wifi
-# legacy and hawkeye header files.
-FW_INCLUDE_PATH:=$(TOPDIR)/dl/include
-FW_COMMON_INCLUDE_PATH:=$(TOPDIR)/dl/wlan/fwcommon/include
-FW_INTERFACE_TOOLS_PATH:=$(TOPDIR)/dl/wlan/fwcommon/fw_interface/tools/
-FW_HDR_INCLUDE_PATH:=$(TOPDIR)/qca/src/qca-wifi/cmn_dev/fw_hdr
-HALPHY_TOOLS_PATH:=$(TOPDIR)/dl/wlan/halphy_tools
-
-include $(INCLUDE_DIR)/local-development.mk
-ifeq ($(DUMP)$(PKG_VERSION),)
-  PKG_REV:=$(shell git ls-remote $(PKG_SOURCE_URL) $(PKG_BRANCH) | cut -b -7)
-  PKG_VERSION:=g$(PKG_REV)
-endif
-
+PKG_VERSION=10.4.4
 PKG_BUILD_DIR:=$(KERNEL_BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)-$(BUILD_VARIANT)/$(PKG_NAME)-$(PKG_VERSION)
 PKG_ASLR_PIE:=0
 
-include $(INCLUDE_DIR)/package-version-override.mk
 include $(INCLUDE_DIR)/package.mk
-
-FW_hw2_asic:=qca-wifi-fw-hw2-10.4-asic
-FW_hw3_asic:=qca-wifi-fw-hw3-10.4-asic
-FW_hw4_asic:=qca-wifi-fw-hw4-10.4-asic
-FW_hw4_emu_bb:=qca-wifi-fw-hw4-10.4-emu_bb
-FW_hw4_emu_m2m:=qca-wifi-fw-hw4-10.4-emu_m2m
-FW_hw5_asic:=qca-wifi-fw-hw5-10.4-asic
-FW_hw6_asic:=qca-wifi-fw-hw6-10.4-asic
-FW_hw5_emu_bb:=qca-wifi-fw-hw5-10.4-emu_bb
-FW_hw5_emu_m2m:=qca-wifi-fw-hw5-10.4-emu_m2m
-FW_hw7_asic:=qca-wifi-fw-hw7-10.4-asic
-FW_hw8_asic:=qca-wifi-fw-hw8-10.4-asic
-FW_hw9_asic:=qca-wifi-fw-hw9-10.4-asic
-FW_hw11_asic:=qca-wifi-fw-hw11-10.4-asic
-HK_fw_hw1_asic:=qca-wifi-hk-fw-hw1-10.4-asic
-HK_fw_debug_asic:=qca-wifi-hk-fw-hw1-debug-asic
-Cyp_hw1_emu:=qca-wifi-cyp-fw-hw1-11.0-asic
-
-FW_10_4:=$(FW_hw2_asic) $(FW_hw3_asic) $(FW_hw4_emu_bb) $(FW_hw4_emu_m2m) $(FW_hw4_asic) $(FW_hw5_asic) $(FW_hw6_asic) $(FW_hw5_emu_bb) $(FW_hw5_emu_m2m) $(FW_hw7_asic) $(FW_hw8_asic) $(FW_hw9_asic) $(FW_hw11_asic) $(HK_fw_hw1_asic) $(HK_fw_debug_asic) $(Cyp_hw1_emu)
 
 ifeq ($(CONFIG_TARGET_ipq_ipq807x_QSDK_Deluxe),y)
 export COPY_6290_HEADER:=1
@@ -52,11 +19,6 @@ ifeq ($(CONFIG_TARGET_ipq_ipq60xx)$(CONFIG_TARGET_ipq_ipq60xx_64),y)
 export ENABLE_6018_HEADER:=1
 endif
 
-#Set QCAWLAN_MAKEOPTS according to selected BUILD_VARIANT and platform
-ifneq ($(KERNEL_BUILD_DIR),)
-export DRIVER_PATH
-include $(DRIVER_PATH)/config.mk
-endif
 
 #########################################################
 ############ WLAN DRIVER BUILD CONFIGURATION ############
@@ -89,9 +51,8 @@ define KernelPackage/$(PKG_NAME)/Default
   URL:=http://www.qca.qualcomm.com
   MAINTAINER:=Qualcomm Atheros
   TITLE:=QCA Wireless LAN Driver
-  DEPENDS:=+libgcc +libc +wireless-tools +librt +iproute2 +kmod-cfg80211-linux +libxml2 +libnl +qca-cfg80211 \
+  DEPENDS:=+libgcc +libc +wireless-tools +librt +iproute2 +libxml2 \
 	  @(!(PACKAGE_kmod-ath&&PACKAGE_kmod-mac80211))
-  PKG_BUILD_DEPENDS+=$(FW_10_4)
   FILES:= $(strip $(QCAWLAN_MODULE_LIST))
   MENU:=1
   PROVIDES:=kmod-qca-wifi
@@ -166,7 +127,7 @@ if TARGET_ipq_ipq807x
 	help
 	   This option enables support for Emulation/VP WiFi 3.0 on RUMI
 endif
-if TARGET_ipq_ipq807x_64
+if TARGET_ipq807x_
    config WIFI_TARGET_WIFI_2_0
 	bool "Enable WIFI_2_0 support for IPQ807x 64bit platform"
 	default y
@@ -252,6 +213,7 @@ endef
 define Build/Prepare
 	$(CP) -L ./qca-wifi/* $(PKG_BUILD_DIR)/
 endef
+
 
 define Build/Compile
 		export CONFIG_WIFI_TARGET_WIFI_2_0="$(CONFIG_WIFI_TARGET_WIFI_2_0)"; \
@@ -443,10 +405,10 @@ $(eval $(call KernelPackage,$(PKG_NAME)-dakota-perf))
 define KernelPackage/$(PKG_NAME)-unified-profile
 $(call KernelPackage/$(PKG_NAME)/Default)
   VARIANT:=unified-profile
-  DEPENDS+=@TARGET_ipq806x||TARGET_ar71xx||TARGET_ipq \
-	   +TARGET_ipq_ipq806x:kmod-qca-nss-drv +TARGET_ipq_ipq807x:kmod-qca-nss-drv \
-	   +TARGET_ipq_ipq807x_64:kmod-qca-nss-drv +TARGET_ipq_ipq60xx:kmod-qca-nss-drv \
-	   +TARGET_ipq_ipq60xx_64:kmod-qca-nss-drv
+  DEPENDS+=@TARGET_ipq807x \
+	   +TARGET_ipq_ipq806x:kmod-qca-nss-drv +TARGET_ipq807x:kmod-qca-nss-drv \
+	   +TARGET_ipq_ipq60xx:kmod-qca-nss-drv \
+	   +TARGET_ipq_ipq807x:kmod-qca-nss-drv
 endef
 
 define KernelPackage/$(PKG_NAME)-unified-profile/Description

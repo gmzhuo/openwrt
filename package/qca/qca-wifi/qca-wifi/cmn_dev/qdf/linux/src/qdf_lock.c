@@ -264,7 +264,13 @@ qdf_export_symbol(qdf_wake_lock_name);
  * QDF status success: if wake lock is initialized
  * QDF status failure: if wake lock was not initialized
  */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 1, 0))
+QDF_STATUS qdf_wake_lock_create(qdf_wake_lock_t *lock, const char *name)
+{
+	*((qdf_wake_lock_t **)lock) = wakeup_source_create(name);
+	return QDF_STATUS_SUCCESS;
+}
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
 QDF_STATUS qdf_wake_lock_create(qdf_wake_lock_t *lock, const char *name)
 {
 	wakeup_source_init(lock, name);
@@ -290,11 +296,6 @@ qdf_export_symbol(qdf_wake_lock_create);
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
 QDF_STATUS qdf_wake_lock_acquire(qdf_wake_lock_t *lock, uint32_t reason)
 {
-	host_diag_log_wlock(reason, qdf_wake_lock_name(lock),
-			    WIFI_POWER_EVENT_DEFAULT_WAKELOCK_TIMEOUT,
-			    WIFI_POWER_EVENT_WAKELOCK_TAKEN);
-	__pm_stay_awake(lock);
-
 	return QDF_STATUS_SUCCESS;
 }
 #else
@@ -317,16 +318,11 @@ qdf_export_symbol(qdf_wake_lock_acquire);
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 12, 0)
 QDF_STATUS qdf_wake_lock_timeout_acquire(qdf_wake_lock_t *lock, uint32_t msec)
 {
-	pm_wakeup_ws_event(lock, msec, true);
 	return QDF_STATUS_SUCCESS;
 }
 #elif LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0)
 QDF_STATUS qdf_wake_lock_timeout_acquire(qdf_wake_lock_t *lock, uint32_t msec)
 {
-	/* Wakelock for Rx is frequent.
-	 * It is reported only during active debug
-	 */
-	__pm_wakeup_event(lock, msec);
 	return QDF_STATUS_SUCCESS;
 }
 #else /* LINUX_VERSION_CODE */
@@ -372,7 +368,13 @@ qdf_export_symbol(qdf_wake_lock_release);
  * QDF status success: if wake lock is acquired
  * QDF status failure: if wake lock was not acquired
  */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 1, 0))
+QDF_STATUS qdf_wake_lock_destroy(qdf_wake_lock_t *lock)
+{
+	wakeup_source_remove(lock);
+	return QDF_STATUS_SUCCESS;
+}
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0))
 QDF_STATUS qdf_wake_lock_destroy(qdf_wake_lock_t *lock)
 {
 	wakeup_source_trash(lock);

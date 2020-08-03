@@ -118,50 +118,50 @@ src_prepare:
 	$(warning "FW_HDR_INCLUDE_PATH=$(FW_HDR_INCLUDE_PATH)")
 ifeq ($(WIFI_TARGET_3_0),1)
 #moving of header files is a temporary fix, should be removed once dependencies are resolved
-	rm -f $(FW_HDR_INCLUDE_PATH)/fw/a_osapi.h
-	rm -f $(FW_HDR_INCLUDE_PATH)/fw/athendpack.h
-	cp -af $(FW_HDR_INCLUDE_PATH)/fw/* $(CURR_DIR)/offload/include/
-	cp -af $(FW_HDR_INCLUDE_PATH)/hw/* $(CURR_DIR)/offload/include/
-	cp -af $(FW_COMMON_INCLUDE_PATH)/qca8074/* $(CURR_DIR)/offload/include/qca8074/
+#	rm -f $(FW_HDR_INCLUDE_PATH)/fw/a_osapi.h
+#	rm -f $(FW_HDR_INCLUDE_PATH)/fw/athendpack.h
+#	cp -af $(FW_HDR_INCLUDE_PATH)/fw/* $(CURR_DIR)/offload/include/
+#	cp -af $(FW_HDR_INCLUDE_PATH)/hw/* $(CURR_DIR)/offload/include/
+#	cp -af $(FW_COMMON_INCLUDE_PATH)/qca8074/* $(CURR_DIR)/offload/include/qca8074/
 ifeq ($(ENABLE_6018_HEADER),1)
-	cp -af $(FW_COMMON_INCLUDE_PATH)/qca6018/ $(CURR_DIR)/offload/include/.
+#	cp -af $(FW_COMMON_INCLUDE_PATH)/qca6018/ $(CURR_DIR)/offload/include/.
 endif
-	cp -af $(FW_INTERFACE_TOOLS_PATH)/wifistats/* $(CURR_DIR)/offload/include/wifistats/
-	rm -f $(CURR_DIR)/offload/include/wlan_tgt_def_config.h
-	rm -f $(CURR_DIR)/offload/include/wlan_tgt_def_config_hl.h
+#	cp -af $(FW_INTERFACE_TOOLS_PATH)/wifistats/* $(CURR_DIR)/offload/include/wifistats/
+#	rm -f $(CURR_DIR)/offload/include/wlan_tgt_def_config.h
+#	rm -f $(CURR_DIR)/offload/include/wlan_tgt_def_config_hl.h
 else
-	cp -af $(FW_INCLUDE_PATH)/* $(CURR_DIR)/offload/include/
+#	cp -af $(FW_INCLUDE_PATH)/* $(CURR_DIR)/offload/include/
 endif
 
 ifeq ($(WIFI_TARGET_2_0),1)
 	mkdir -p $(CURR_DIR)/offload/include/legacy
-	cp -af $(FW_INCLUDE_PATH)/dbglog_rtt_host.h $(CURR_DIR)/offload/include/legacy/
-	cp -af $(FW_INCLUDE_PATH)/dbglog_host_gen.h $(CURR_DIR)/offload/include/legacy/
-	cp -af $(FW_INCLUDE_PATH)/wmi.h $(CURR_DIR)/offload/include/legacy/
-	cp -af $(FW_INCLUDE_PATH)/wmi_services.h $(CURR_DIR)/offload/include/legacy/
-	cp -af $(FW_INCLUDE_PATH)/wlan_wow.h $(CURR_DIR)/offload/include/legacy/
-	cp -af $(FW_INCLUDE_PATH)/wmi_unified.h $(CURR_DIR)/offload/include/legacy/
-	cp -af $(FW_INCLUDE_PATH)/dbglog.h $(CURR_DIR)/offload/include/legacy/
-	cp -af $(FW_INCLUDE_PATH)/dbglog_id.h $(CURR_DIR)/offload/include/legacy/
-	cp -af $(FW_INCLUDE_PATH)/wlan_module_ids.h $(CURR_DIR)/offload/include/legacy/
-	cp -af $(FW_INCLUDE_PATH)/rtt_interface.h $(CURR_DIR)/offload/include/legacy/
-	cp -af $(FW_INCLUDE_PATH)/wmix.h $(CURR_DIR)/offload/include/legacy/
-	cp -af $(FW_INCLUDE_PATH)/htt.h $(CURR_DIR)/offload/include/legacy/
+#	cp -af $(FW_INCLUDE_PATH)/dbglog_rtt_host.h $(CURR_DIR)/offload/include/legacy/
+#	cp -af $(FW_INCLUDE_PATH)/dbglog_host_gen.h $(CURR_DIR)/offload/include/legacy/
+#	cp -af $(FW_INCLUDE_PATH)/wmi.h $(CURR_DIR)/offload/include/legacy/
+#	cp -af $(FW_INCLUDE_PATH)/wmi_services.h $(CURR_DIR)/offload/include/legacy/
+#	cp -af $(FW_INCLUDE_PATH)/wlan_wow.h $(CURR_DIR)/offload/include/legacy/
+#	cp -af $(FW_INCLUDE_PATH)/wmi_unified.h $(CURR_DIR)/offload/include/legacy/
+#	cp -af $(FW_INCLUDE_PATH)/dbglog.h $(CURR_DIR)/offload/include/legacy/
+#	cp -af $(FW_INCLUDE_PATH)/dbglog_id.h $(CURR_DIR)/offload/include/legacy/
+#	cp -af $(FW_INCLUDE_PATH)/wlan_module_ids.h $(CURR_DIR)/offload/include/legacy/
+#	cp -af $(FW_INCLUDE_PATH)/rtt_interface.h $(CURR_DIR)/offload/include/legacy/
+#	cp -af $(FW_INCLUDE_PATH)/wmix.h $(CURR_DIR)/offload/include/legacy/
+#	cp -af $(FW_INCLUDE_PATH)/htt.h $(CURR_DIR)/offload/include/legacy/
 #htt_deps.h not present in fwcommon, hence copied only in offload/include. No conflict
-	cp -af $(FW_INCLUDE_PATH)/htt_deps.h $(CURR_DIR)/offload/include/
+#	cp -af $(FW_INCLUDE_PATH)/htt_deps.h $(CURR_DIR)/offload/include/
 #targaddrs.h doesnt need alternate path currently, hence copied only in offload/include.
-	cp -af $(FW_INCLUDE_PATH)/targaddrs.h $(CURR_DIR)/offload/include/
-	cp -af $(FW_INCLUDE_PATH)/wlan_defs.h $(CURR_DIR)/offload/include/legacy/
+#	cp -af $(FW_INCLUDE_PATH)/targaddrs.h $(CURR_DIR)/offload/include/
+#	cp -af $(FW_INCLUDE_PATH)/wlan_defs.h $(CURR_DIR)/offload/include/legacy/
 	mkdir -p $(CURR_DIR)/offload/include/legacy/QCA9984
-	cp -af $(FW_INCLUDE_PATH)/QCA9984/* $(CURR_DIR)/offload/include/legacy/QCA9984/
+#	cp -af $(FW_INCLUDE_PATH)/QCA9984/* $(CURR_DIR)/offload/include/legacy/QCA9984/
 	mkdir -p $(CURR_DIR)/offload/include/legacy/QCA9888
-	cp -af $(FW_INCLUDE_PATH)/QCA9888/* $(CURR_DIR)/offload/include/legacy/QCA9888/
+#	cp -af $(FW_INCLUDE_PATH)/QCA9888/* $(CURR_DIR)/offload/include/legacy/QCA9888/
 	mkdir -p $(CURR_DIR)/offload/include/legacy/IPQ4019
-	cp -af $(FW_INCLUDE_PATH)/IPQ4019/* $(CURR_DIR)/offload/include/legacy/IPQ4019/
+#	cp -af $(FW_INCLUDE_PATH)/IPQ4019/* $(CURR_DIR)/offload/include/legacy/IPQ4019/
 	mkdir -p $(CURR_DIR)/offload/include/legacy/AR9888
-	cp -af $(FW_INCLUDE_PATH)/AR9888/* $(CURR_DIR)/offload/include/legacy/AR9888/
+#	cp -af $(FW_INCLUDE_PATH)/AR9888/* $(CURR_DIR)/offload/include/legacy/AR9888/
 	mkdir -p $(CURR_DIR)/offload/include/legacy/AR900B
-	cp -af $(FW_INCLUDE_PATH)/AR900B/* $(CURR_DIR)/offload/include/legacy/AR900B/
+3	cp -af $(FW_INCLUDE_PATH)/AR900B/* $(CURR_DIR)/offload/include/legacy/AR900B/
 	$(warning "FW_INCLUDE_PATH=$(FW_INCLUDE_PATH)")
 endif
 ifeq ($(WIFI_TARGET_3_0),1)
@@ -182,8 +182,8 @@ ifeq ($(WIFI_TARGET_3_0),1)
 
 	#cp -af $(CURR_DIR)/hal/linux/KbuildQDF cmn_dev/qdf/Kbuild
 endif
-	cp -af $(FW_INCLUDE_PATH)/sw_version.h $(CURR_DIR)/offload/include/
-	cp -af $(HALPHY_TOOLS_PATH)/* $(CURR_DIR)/halphy_tools/
+#	cp -af $(FW_INCLUDE_PATH)/sw_version.h $(CURR_DIR)/offload/include/
+#	cp -af $(HALPHY_TOOLS_PATH)/* $(CURR_DIR)/halphy_tools/
 
 env_prepare:
 	@echo "============================PREPARING==========================="
@@ -234,9 +234,9 @@ install_headers:
 	cp -af $(foreach header,$(QCAWLAN_HEADERS),$(CURR_DIR)/$(header)) $(INSTALL_DEST)
 
 ifeq ($(DA_SUPPORT),1)
-all_build: env_prepare hal_build driver_build tools_build
+all_build: env_prepare hal_build driver_build 
 else
-all_build: env_prepare driver_build tools_build
+all_build: env_prepare driver_build
 endif
 
 	@echo "========================Finished qca-wifi-10.4 build================================"

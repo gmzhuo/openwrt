@@ -79,10 +79,10 @@ ifeq ($(DA_SUPPORT),1)
 endif
 	cd $(DEPTH)/qca_ol && make -f Kbuild
 else
-	$(MAKE) -C $(KERNELPATH) SUBDIRS=$(shell pwd) modules
+	$(MAKE) -C $(KERNELPATH) M=$(shell pwd) modules
 endif
 else
-	$(MAKE) -C $(KERNELPATH) KBUILD_EXTRA_SYMBOLS=$(ATH_HAL)/Module.symvers SUBDIRS=$(shell pwd) modules
+	$(MAKE) -C $(KERNELPATH) KBUILD_EXTRA_SYMBOLS=$(ATH_HAL)/Module.symvers M=$(shell pwd) modules
 endif
 
 hal_build:

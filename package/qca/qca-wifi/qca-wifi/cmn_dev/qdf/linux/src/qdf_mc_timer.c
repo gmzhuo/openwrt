@@ -775,6 +775,16 @@ unsigned long qdf_mc_timer_get_system_ticks(void)
 }
 qdf_export_symbol(qdf_mc_timer_get_system_ticks);
 
+
+static inline void do_gettimeofday(struct timeval *tv)
+{
+	struct timespec64 now;
+
+	ktime_get_real_ts64(&now);
+	tv->tv_sec = now.tv_sec;
+	tv->tv_usec = now.tv_nsec/1000;
+}
+
 /**
  * qdf_mc_timer_get_system_time() - Get the system time in milliseconds
  *
@@ -795,9 +805,7 @@ qdf_export_symbol(qdf_mc_timer_get_system_time);
 
 s64 qdf_get_monotonic_boottime_ns(void)
 {
-	struct timespec ts;
-
-	get_monotonic_boottime(&ts);
+	struct timespec ts = ktime_to_timespec(ktime_get_boottime());
 
 	return timespec_to_ns(&ts);
 }
