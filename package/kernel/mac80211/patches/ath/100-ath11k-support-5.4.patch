@@ -1,6 +1,41 @@
---- a/drivers/net/wireless/ath/ath11k/ahb.c
-+++ b/drivers/net/wireless/ath/ath11k/ahb.c
-@@ -914,7 +914,13 @@ static const struct ath5k_ini ar5210_ini
+Index: backports-5.8-rc2-1/drivers/net/wireless/ath/ath11k/ahb.c
+===================================================================
+--- backports-5.8-rc2-1.orig/drivers/net/wireless/ath/ath11k/ahb.c
++++ backports-5.8-rc2-1/drivers/net/wireless/ath/ath11k/ahb.c
+@@ -8,6 +8,7 @@
+ #include <linux/of_device.h>
+ #include <linux/of.h>
+ #include <linux/dma-mapping.h>
++#include <linux/clk.h>
+ #include "ahb.h"
+ #include "debug.h"
+ #include "hif.h"
+@@ -900,6 +901,24 @@ static const struct ath11k_hif_ops ath11
+ 	.power_up = ath11k_ahb_power_up,
+ };
+ 
++static void clock_rate_set_and_enable(
++	struct device_node *node, char* clock_id, uint32_t rate)
++{
++	struct clk *clk;
++
++	printk("set clock %s rate %d\r\n", clock_id, rate);
++
++	clk = of_clk_get_by_name(node, clock_id);
++	if (!IS_ERR(clk)) {
++		if (rate)
++			clk_set_rate(clk, rate);
++
++		clk_prepare_enable(clk);
++	}
++
++	printk("set clock %s rate %d done\r\n", clock_id, rate);
++}
++
+ static int ath11k_ahb_probe(struct platform_device *pdev)
+ {
+ 	struct ath11k_base *ab;
+@@ -914,12 +929,59 @@ static int ath11k_ahb_probe(struct platf
  		return -EINVAL;
  	}
  
@@ -15,3 +50,49 @@
  	if (IS_ERR(mem)) {
  		dev_err(&pdev->dev, "ioremap error\n");
  		return PTR_ERR(mem);
+ 	}
+ 
++	clock_rate_set_and_enable(pdev->dev.of_node, "gcc_nssnoc_crypto_clk", 0);
++	clock_rate_set_and_enable(pdev->dev.of_node, "gcc_ubi1_core_clk", 748800000);
++	clock_rate_set_and_enable(pdev->dev.of_node, "gcc_ubi0_core_clk", 748800000);
++
++	clock_rate_set_and_enable(pdev->dev.of_node, "gcc_ubi1_mpt_clk", 25000000);
++	clock_rate_set_and_enable(pdev->dev.of_node, "gcc_ubi0_mpt_clk", 25000000);
++
++	clock_rate_set_and_enable(pdev->dev.of_node, "gcc_ubi1_ahb_clk", 200000000);
++	clock_rate_set_and_enable(pdev->dev.of_node, "gcc_ubi0_ahb_clk", 200000000);
++	clock_rate_set_and_enable(pdev->dev.of_node, "gcc_nssnoc_ubi1_ahb_clk", 200000000);
++	clock_rate_set_and_enable(pdev->dev.of_node, "gcc_nssnoc_ubi0_ahb_clk", 200000000);
++	clock_rate_set_and_enable(pdev->dev.of_node, "gcc_nssnoc_ce_axi_clk", 200000000);
++	clock_rate_set_and_enable(pdev->dev.of_node, "gcc_nssnoc_ce_apb_clk", 200000000);
++	clock_rate_set_and_enable(pdev->dev.of_node, "gcc_nss_csr_clk", 200000000);
++	clock_rate_set_and_enable(pdev->dev.of_node, "gcc_nss_ce_axi_clk", 200000000);
++	clock_rate_set_and_enable(pdev->dev.of_node, "gcc_nss_ce_apb_clk", 200000000);
++
++	clock_rate_set_and_enable(pdev->dev.of_node, "gcc_ubi1_nc_axi_clk", 0);
++	clock_rate_set_and_enable(pdev->dev.of_node, "gcc_ubi0_nc_axi_clk", 0);
++	clock_rate_set_and_enable(pdev->dev.of_node, "gcc_ubi1_axi_clk", 0);
++	clock_rate_set_and_enable(pdev->dev.of_node, "gcc_ubi0_axi_clk", 0);
++	clock_rate_set_and_enable(pdev->dev.of_node, "gcc_nss_noc_clk", 0);
++
++
++	clock_rate_set_and_enable(pdev->dev.of_node, "gcc_nssnoc_qosgen_ref_clk", 19200000);
++	clock_rate_set_and_enable(pdev->dev.of_node, "gcc_nssnoc_timeout_ref_clk", 4800000);
++
++	clock_rate_set_and_enable(pdev->dev.of_node, "gcc_snoc_bus_timeout2_ahb_clk", 133333333);
++
++	clock_rate_set_and_enable(pdev->dev.of_node, "gcc_pcie0_rchng_clk", 100000000);
++
++	clock_rate_set_and_enable(pdev->dev.of_node, "gcc_pcie0_axi_s_bridge_clk", 200000000);
++	clock_rate_set_and_enable(pdev->dev.of_node, "gcc_sys_noc_pcie0_axi_clk", 200000000);
++	clock_rate_set_and_enable(pdev->dev.of_node, "gcc_pcie0_axi_s_clk", 200000000);
++	clock_rate_set_and_enable(pdev->dev.of_node, "gcc_pcie0_axi_m_clk", 200000000);
++
++	clock_rate_set_and_enable(pdev->dev.of_node, "gcc_pcie1_pipe_clk", 125000000);
++
++	clock_rate_set_and_enable(pdev->dev.of_node, "gcc_usb0_pipe_clk", 125000000);
++	clock_rate_set_and_enable(pdev->dev.of_node, "gcc_usb1_pipe_clk", 125000000);
++
+ 	ret = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "failed to set 32-bit consistent dma\n");

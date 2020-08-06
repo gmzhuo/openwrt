@@ -5800,8 +5800,18 @@ static int gcc_ipq807x_probe(struct platform_device *pdev)
 
 		v2fix_branch_clk_offset(gcc_snoc_bus_timeout2_ahb_clk);
 		v2fix_branch_clk_offset(gcc_snoc_bus_timeout3_ahb_clk);
-		 clk_register_fixed_rate(dev, "pcie20_phy0_pipe_clk", NULL, CLK_IS_ROOT,
+		clk_register_fixed_rate(dev, "pcie20_phy0_pipe_clk", NULL, CLK_IS_ROOT,
                                       250000000);
+		clk_register_fixed_rate(dev, "pcie20_phy1_pipe_clk", NULL, CLK_IS_ROOT,
+                                      250000000);
+		clk_register_fixed_rate(dev, "bias_pll_cc_clk", NULL, CLK_IS_ROOT,
+                                      300000000);
+		clk_register_fixed_rate(dev, "bias_pll_nss_noc_clk", NULL, CLK_IS_ROOT,
+                                      416500000);
+		clk_register_fixed_rate(dev, "usb3phy_1_cc_pipe_clk", NULL, CLK_IS_ROOT,
+                                      125000000);
+		clk_register_fixed_rate(dev, "usb3phy_0_cc_pipe_clk", NULL, CLK_IS_ROOT,
+                                      125000000);
 	} else {
 		 clk_register_fixed_rate(dev, "pcie20_phy0_pipe_clk", NULL, CLK_IS_ROOT,
                                       125000000);
