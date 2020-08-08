@@ -17,7 +17,7 @@ case "$FIRMWARE" in
 	fi
 
 	if [ -f "$HK_BD_FILENAME" ]; then
-		FILESIZE=$(stat -Lc%s "$HK_BD_FILENAME")
+		FILESIZE=131072
 	fi
 
 	dd if=$mtdblock of=/lib/firmware/$FIRMWARE bs=1 count=$FILESIZE skip=4096
