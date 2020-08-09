@@ -29,6 +29,11 @@
 #include <ref/ref_vsi.h>
 #endif
 #include <net/switchdev.h>
+#include <linux/of.h>
+#include <linux/reset.h>
+#include <linux/clk.h>
+#include <linux/clk-provider.h>
+#include <linux/clkdev.h>
 
 #include "nss_dp_dev.h"
 #include "edma.h"
@@ -129,9 +134,10 @@ static int32_t nss_dp_set_mac_address(struct net_device *netdev, void *macaddr)
 
 	eth_commit_mac_addr_change(netdev, macaddr);
 
+#ifdef NSS_FAL_SUPPORT
 	dp_priv->gmac_hal_ops->setmacaddr(dp_priv->gmac_hal_ctx,
 			(uint8_t *)addr->sa_data);
-
+#endif
 	return 0;
 }
 
@@ -150,11 +156,17 @@ nss_dp_get_stats64(struct net_device *netdev,
 	struct nss_dp_dev *dp_priv;
 
 	if (!netdev)
+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(5,4,0))
 		return stats;
+#else
+		return;
+#endif
 
 	dp_priv = (struct nss_dp_dev *)netdev_priv(netdev);
 
+#ifdef NSS_FAL_SUPPORT
 	dp_priv->gmac_hal_ops->getndostats(dp_priv->gmac_hal_ctx, stats);
+#endif
 #if (LINUX_VERSION_CODE <= KERNEL_VERSION(5,4,0))
 	return stats;
 #endif
@@ -430,18 +442,24 @@ static int32_t nss_dp_of_get_pdata(struct device_node *np,
 		return -EFAULT;
 	}
 
+#ifdef NSS_FAL_SUPPORT
 	if (of_property_read_u32(np, "qcom,mactype", &hal_pdata->mactype)) {
 		pr_err("%s: error reading mactype\n", np->name);
 		return -EFAULT;
 	}
+#else
+	//TODO to deal mactype
+#endif
 
 	if (of_address_to_resource(np, 0, &memres_devtree) != 0)
 		return -EFAULT;
 
 	netdev->base_addr = memres_devtree.start;
+#ifdef NSS_FAL_SUPPORT
 	hal_pdata->reg_len = resource_size(&memres_devtree);
 	hal_pdata->netdev = netdev;
 	hal_pdata->macid = dp_priv->macid;
+#endif
 
 	dp_priv->phy_mii_type = of_get_phy_mode(np);
 	dp_priv->link_poll = of_property_read_bool(np, "qcom,link-poll");
@@ -544,7 +562,9 @@ static int32_t nss_dp_probe(struct platform_device *pdev)
 	struct net_device *netdev;
 	struct nss_dp_dev *dp_priv;
 	struct device_node *np = pdev->dev.of_node;
+#ifdef NSS_FAL_SUPPORT
 	struct gmac_hal_platform_data gmac_hal_pdata;
+#endif
 	int32_t ret = 0;
 	uint8_t phy_id[MII_BUS_ID_SIZE + 3];
 #if defined(NSS_DP_PPE_SUPPORT)
@@ -572,7 +592,11 @@ static int32_t nss_dp_probe(struct platform_device *pdev)
 	nss_dp_set_ethtool_ops(netdev);
 	nss_dp_switchdev_setup(netdev);
 
+#ifdef NSS_FAL_SUPPORT
 	ret = nss_dp_of_get_pdata(np, netdev, &gmac_hal_pdata);
+#else
+	ret = nss_dp_of_get_pdata(np, netdev, NULL);
+#endif
 	if (ret != 0) {
 		goto fail;
 	}
@@ -585,6 +609,7 @@ static int32_t nss_dp_probe(struct platform_device *pdev)
 
 	/* TODO:locks init */
 
+#ifdef NSS_FAL_SUPPORT
 	/*
 	 * HAL's init function will return the pointer to the HAL context
 	 * (private to hal), which dp will store in its data structures.
@@ -607,6 +632,7 @@ static int32_t nss_dp_probe(struct platform_device *pdev)
 		netdev_dbg(netdev, "gmac hal init failed\n");
 		goto fail;
 	}
+#endif
 
 	if (dp_priv->link_poll) {
 		dp_priv->miibus = nss_dp_mdio_attach(pdev);
@@ -656,7 +682,9 @@ static int32_t nss_dp_probe(struct platform_device *pdev)
 	if (ret) {
 		netdev_dbg(netdev, "Error registering netdevice %s\n",
 								netdev->name);
+#ifdef NSS_FAL_SUPPORT
 		dp_priv->gmac_hal_ops->exit(dp_priv->gmac_hal_ctx);
+#endif
 		goto fail;
 	}
 
@@ -680,18 +708,24 @@ static int nss_dp_remove(struct platform_device *pdev)
 {
 	uint32_t i;
 	struct nss_dp_dev *dp_priv;
+#ifdef NSS_FAL_SUPPORT
 	struct nss_gmac_hal_ops *hal_ops;
+#endif
 
 	for (i = 0; i < NSS_DP_MAX_PHY_PORTS; i++) {
 		dp_priv = dp_global_ctx.nss_dp[i];
 		if (!dp_priv)
 			continue;
 
+#ifdef NSS_FAL_SUPPORT
 		hal_ops = dp_priv->gmac_hal_ops;
+#endif
 		if (dp_priv->phydev)
 			phy_disconnect(dp_priv->phydev);
 		unregister_netdev(dp_priv->netdev);
+#ifdef NSS_FAL_SUPPORT
 		hal_ops->exit(dp_priv->gmac_hal_ctx);
+#endif
 		free_netdev(dp_priv->netdev);
 		dp_global_ctx.nss_dp[i] = NULL;
 	}
@@ -715,6 +749,186 @@ static struct platform_driver nss_dp_drv = {
 		  },
 };
 
+
+/* below 3 routines to be used as common */
+void ess_clock_rate_set_and_enable(
+	struct device_node *node, const char* clock_id, uint32_t rate)
+{
+	struct clk *clk;
+
+	clk = of_clk_get_by_name(node, clock_id);
+	if (!IS_ERR(clk)) {
+		if (rate)
+			clk_set_rate(clk, rate);
+
+		clk_prepare_enable(clk);
+	}
+}
+
+typedef enum ess_reset_action{
+	ESS_RESET_ASSERT,
+	ESS_RESET_DEASSERT,
+} ess_reset_action;
+
+void ess_gcc_reset(struct reset_control *rst, uint32_t action)
+{
+	if (action == ESS_RESET_ASSERT)
+		reset_control_assert(rst);
+	else
+		reset_control_deassert(rst);
+
+}
+
+#if 0
+void ssdk_uniphy_reset(
+	uint32_t dev_id,
+	enum unphy_rst_type rst_type,
+	uint32_t action)
+{
+	struct reset_control *rst;
+
+	rst = uniphy_rsts[rst_type];
+	if (IS_ERR(rst)) {
+		SSDK_ERROR("reset(%d) nof exist!\n", rst_type);
+		return;
+	}
+
+	ess_gcc_reset(rst, action);
+}
+
+void ess_port_reset(
+	uint32_t dev_id,
+	uint32_t port_id,
+	uint32_t action)
+{
+	struct reset_control *rst;
+
+	if ((port_id < SSDK_PHYSICAL_PORT1) || (port_id > SSDK_PHYSICAL_PORT6))
+		return;
+
+	rst = port_rsts[port_id-1];
+	if (IS_ERR(rst)) {
+		SSDK_ERROR("reset(%d) not exist!\n", port_id);
+		return;
+	}
+
+	ess_gcc_reset(rst, action);
+}
+#endif
+
+
+#define CMN_AHB_CLK             "cmn_ahb_clk"
+#define CMN_SYS_CLK             "cmn_sys_clk"
+#define UNIPHY0_AHB_CLK "uniphy0_ahb_clk"
+#define UNIPHY0_SYS_CLK "uniphy0_sys_clk"
+#define UNIPHY1_AHB_CLK "uniphy1_ahb_clk"
+#define UNIPHY1_SYS_CLK "uniphy1_sys_clk"
+#define UNIPHY2_AHB_CLK "uniphy2_ahb_clk"
+#define UNIPHY2_SYS_CLK "uniphy2_sys_clk"
+#define PORT1_MAC_CLK           "port1_mac_clk"
+#define PORT2_MAC_CLK           "port2_mac_clk"
+#define PORT3_MAC_CLK           "port3_mac_clk"
+#define PORT4_MAC_CLK           "port4_mac_clk"
+#define PORT5_MAC_CLK           "port5_mac_clk"
+#define PORT6_MAC_CLK           "port6_mac_clk"
+#define NSS_PPE_CLK             "nss_ppe_clk"
+#define NSS_PPE_CFG_CLK "nss_ppe_cfg_clk"
+#define NSSNOC_PPE_CLK          "nssnoc_ppe_clk"
+#define NSSNOC_PPE_CFG_CLK      "nssnoc_ppe_cfg_clk"
+#define NSS_EDMA_CLK            "nss_edma_clk"
+#define NSS_EDMA_CFG_CLK        "nss_edma_cfg_clk"
+#define NSS_PPE_IPE_CLK         "nss_ppe_ipe_clk"
+#define NSS_PPE_BTQ_CLK "nss_ppe_btq_clk"
+#define MDIO_AHB_CLK            "gcc_mdio_ahb_clk"
+#define NSSNOC_CLK              "gcc_nss_noc_clk"
+#define NSSNOC_SNOC_CLK "gcc_nssnoc_snoc_clk"
+#define MEM_NOC_NSSAXI_CLK      "gcc_mem_noc_nss_axi_clk"
+#define CRYPTO_PPE_CLK          "gcc_nss_crypto_clk"
+#define NSS_IMEM_CLK            "gcc_nss_imem_clk"
+#define NSS_PTP_REF_CLK "gcc_nss_ptp_ref_clk"
+
+#define UNIPHY_AHB_CLK_RATE     100000000
+#define UNIPHY_SYS_CLK_RATE     19200000
+#define PPE_CLK_RATE    300000000
+#define MDIO_AHB_RATE   100000000
+#define NSS_NOC_RATE    461500000
+#define NSSNOC_SNOC_RATE        266670000
+#define NSS_IMEM_RATE   400000000
+#define PTP_REF_RARE    150000000
+#define NSS_AXI_RATE    461500000
+#define NSS_PORT5_DFLT_RATE 19200000
+
+#define UNIPHY_CLK_RATE_125M            125000000
+#define UNIPHY_CLK_RATE_312M            312500000
+#define UNIPHY_DEFAULT_RATE             UNIPHY_CLK_RATE_125M
+
+
+static void ess_ipq807x_clk_init(void)
+{
+	struct device_node *clock_node = of_find_node_by_name(NULL, "ess-switch");
+	//struct device_node *clock_node = pdev->dev.of_node;
+
+	/* AHB and sys clk */
+	ess_clock_rate_set_and_enable(clock_node, CMN_AHB_CLK, 0);
+	ess_clock_rate_set_and_enable(clock_node, CMN_SYS_CLK, 0);
+	ess_clock_rate_set_and_enable(clock_node, UNIPHY0_AHB_CLK,
+					UNIPHY_AHB_CLK_RATE);
+	ess_clock_rate_set_and_enable(clock_node, UNIPHY0_SYS_CLK,
+					UNIPHY_SYS_CLK_RATE);
+	ess_clock_rate_set_and_enable(clock_node, UNIPHY1_AHB_CLK,
+					UNIPHY_AHB_CLK_RATE);
+	ess_clock_rate_set_and_enable(clock_node, UNIPHY1_SYS_CLK,
+					UNIPHY_SYS_CLK_RATE);
+	ess_clock_rate_set_and_enable(clock_node, UNIPHY2_AHB_CLK,
+					UNIPHY_AHB_CLK_RATE);
+	ess_clock_rate_set_and_enable(clock_node, UNIPHY2_SYS_CLK,
+					UNIPHY_SYS_CLK_RATE);
+
+	/* ppe related fixed clock init */
+	ess_clock_rate_set_and_enable(clock_node,
+					PORT1_MAC_CLK, PPE_CLK_RATE);
+	ess_clock_rate_set_and_enable(clock_node,
+					PORT2_MAC_CLK, PPE_CLK_RATE);
+	ess_clock_rate_set_and_enable(clock_node,
+					PORT3_MAC_CLK, PPE_CLK_RATE);
+	ess_clock_rate_set_and_enable(clock_node,
+					PORT4_MAC_CLK, PPE_CLK_RATE);
+	ess_clock_rate_set_and_enable(clock_node,
+					PORT5_MAC_CLK, PPE_CLK_RATE);
+	ess_clock_rate_set_and_enable(clock_node,
+					PORT6_MAC_CLK, PPE_CLK_RATE);
+	ess_clock_rate_set_and_enable(clock_node,
+					NSS_PPE_CLK, PPE_CLK_RATE);
+	ess_clock_rate_set_and_enable(clock_node,
+					NSS_PPE_CFG_CLK, PPE_CLK_RATE);
+	ess_clock_rate_set_and_enable(clock_node,
+					NSSNOC_PPE_CLK, PPE_CLK_RATE);
+	ess_clock_rate_set_and_enable(clock_node,
+					NSSNOC_PPE_CFG_CLK, PPE_CLK_RATE);
+	ess_clock_rate_set_and_enable(clock_node,
+					NSS_EDMA_CLK, PPE_CLK_RATE);
+	ess_clock_rate_set_and_enable(clock_node,
+					NSS_EDMA_CFG_CLK, PPE_CLK_RATE);
+	ess_clock_rate_set_and_enable(clock_node,
+					NSS_PPE_IPE_CLK, PPE_CLK_RATE);
+	ess_clock_rate_set_and_enable(clock_node,
+					NSS_PPE_BTQ_CLK, PPE_CLK_RATE);
+	ess_clock_rate_set_and_enable(clock_node,
+					MDIO_AHB_CLK, MDIO_AHB_RATE);
+	ess_clock_rate_set_and_enable(clock_node,
+					NSSNOC_CLK, NSS_NOC_RATE);
+	ess_clock_rate_set_and_enable(clock_node,
+					NSSNOC_SNOC_CLK, NSSNOC_SNOC_RATE);
+	ess_clock_rate_set_and_enable(clock_node,
+					MEM_NOC_NSSAXI_CLK, NSS_AXI_RATE);
+	ess_clock_rate_set_and_enable(clock_node,
+					CRYPTO_PPE_CLK, PPE_CLK_RATE);
+	ess_clock_rate_set_and_enable(clock_node,
+					NSS_IMEM_CLK, NSS_IMEM_RATE);
+	ess_clock_rate_set_and_enable(clock_node,
+					NSS_PTP_REF_CLK, PTP_REF_RARE);
+}
+
 /*
  * nss_dp_init()
  */
@@ -728,6 +942,9 @@ int __init nss_dp_init(void)
 	 */
 	if (!of_machine_is_compatible("qcom,ipq807x") && !of_machine_is_compatible("qcom,ipq6018"))
 		return 0;
+
+	ess_ipq807x_clk_init();
+	printk("clk inited\r\n");
 
 	/*
 	 * TODO Move this to soc_ops
