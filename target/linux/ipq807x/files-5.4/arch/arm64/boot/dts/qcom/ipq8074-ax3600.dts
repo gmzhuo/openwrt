@@ -314,11 +314,16 @@
 			phy4: ethernet-phy@4 {
 				reg = <4>;
 			};
+			switch0@1f {
+                compatible = "qca,ipq-ess-switch";
+                reg = <0x1f>;
+				switch = <&qcom_ess_switch>;
+			};
 		};
 
-		ess-switch@3a000000 {
+		qcom_ess_switch:ess-switch@3a000000 {
 			compatible = "qcom,ess-switch-ipq807x";
-			reg = <0x3a000000 0x1000000>;
+			reg = <0x3a000000 0x80000>;
 			switch_access_mode = "local bus";
 			switch_cpu_bmp = <0x1>;  /* cpu port bitmap */
 			switch_lan_bmp = <0x1e>; /* lan port bitmap */
@@ -328,6 +333,7 @@
 			switch_mac_mode2 = <0xff>; /* mac mode for uniphy instance2*/
 			bm_tick_mode = <0>; /* bm tick mode */
 			tm_tick_mode = <0>; /* tm tick mode */
+
 			clocks = <&gcc GCC_CMN_12GPLL_AHB_CLK>,
 					<&gcc GCC_CMN_12GPLL_SYS_CLK>,
 					<&gcc GCC_UNIPHY0_AHB_CLK>,
@@ -425,7 +431,7 @@
 					"nss_port5_rx_clk_src",
 					"nss_port5_tx_clk_src";
 
-			resets = <&gcc GCC_PPE_FULL_RESET>,
+			resets = <&gcc GCC_PPE_FULL_RESET>, <&gcc GCC_PPE_FULL_RESET>,
 				 <&gcc GCC_UNIPHY0_SOFT_RESET>,
 				 <&gcc GCC_UNIPHY0_XPCS_RESET>,
 				 <&gcc GCC_UNIPHY1_SOFT_RESET>,
@@ -439,7 +445,7 @@
 				 <&gcc GCC_NSSPORT5_RESET>,
 				 <&gcc GCC_NSSPORT6_RESET>;
 
-			reset-names = "ppe_rst", "uniphy0_soft_rst",
+			reset-names = "ess_rst", "ppe_rst", "uniphy0_soft_rst",
 					"uniphy0_xpcs_rst", "uniphy1_soft_rst",
 					"uniphy1_xpcs_rst", "uniphy2_soft_rst",
 					"uniphy2_xpcs_rst", "nss_port1_rst",
@@ -738,6 +744,12 @@
 					};
 				};
 			};
+		};
+		ess-psgmii@98000 {
+			compatible = "qcom,ess-psgmii";
+			reg = <0x3a001000 0x800>;
+			psgmii_access_mode = "local bus";
+			status = "ok";
 		};
 
 		ess-uniphy@7a00000 {
