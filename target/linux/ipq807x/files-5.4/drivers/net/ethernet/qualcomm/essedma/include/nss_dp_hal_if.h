@@ -29,7 +29,6 @@ enum gmac_device_type {
 	GMAC_HAL_TYPE_MAX
 };
 
-#ifdef NSS_FAL_SUPPORT
 /*
  * gmac_hal_platform_data
  */
@@ -159,5 +158,4 @@ static inline bool hal_check_reg_bits(void __iomem *regbase,
 {
 	return (bitpos & hal_read_reg(regbase, regoffset)) != 0;
 }
-#endif
 #endif /* __NSS_DP_HAL_IF_H__ */

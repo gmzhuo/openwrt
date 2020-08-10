@@ -20,9 +20,7 @@
 #include <linux/phy.h>
 #include <linux/version.h>
 #include "nss_dp_dev.h"
-#ifdef NSS_FAL_SUPPORT
 #include "fal/fal_port_ctrl.h"
-#endif
 
 /*
  * nss_dp_get_ethtool_stats()
@@ -30,11 +28,9 @@
 static void nss_dp_get_ethtool_stats(struct net_device *netdev,
 				struct ethtool_stats *stats, uint64_t *data)
 {
-#ifdef NSS_FAL_SUPPORT
 	struct nss_dp_dev *dp_priv = (struct nss_dp_dev *)netdev_priv(netdev);
 
 	dp_priv->gmac_hal_ops->getethtoolstats(dp_priv->gmac_hal_ctx, data);
-#endif
 }
 
 /*
@@ -42,13 +38,9 @@ static void nss_dp_get_ethtool_stats(struct net_device *netdev,
  */
 static int32_t nss_dp_get_strset_count(struct net_device *netdev, int32_t sset)
 {
-#ifdef NSS_FAL_SUPPORT
 	struct nss_dp_dev *dp_priv = (struct nss_dp_dev *)netdev_priv(netdev);
 
 	return dp_priv->gmac_hal_ops->getssetcount(dp_priv->gmac_hal_ctx, sset);
-#else
-	return 0;
-#endif
 }
 
 /*
@@ -57,12 +49,10 @@ static int32_t nss_dp_get_strset_count(struct net_device *netdev, int32_t sset)
 static void nss_dp_get_strings(struct net_device *netdev, uint32_t stringset,
 			uint8_t *data)
 {
-#ifdef NSS_FAL_SUPPORT
 	struct nss_dp_dev *dp_priv = (struct nss_dp_dev *)netdev_priv(netdev);
 
 	dp_priv->gmac_hal_ops->getstrings(dp_priv->gmac_hal_ctx, stringset,
 					  data);
-#endif
 }
 
 /*
@@ -183,7 +173,6 @@ static int32_t nss_dp_set_pauseparam(struct net_device *netdev,
  */
 static inline void nss_dp_fal_to_ethtool_linkmode_xlate(uint32_t *xlate_to, uint32_t *xlate_from)
 {
-#ifdef NSS_FAL_SUPPORT
 	uint32_t pos;
 
 	while (*xlate_from) {
@@ -218,11 +207,6 @@ static inline void nss_dp_fal_to_ethtool_linkmode_xlate(uint32_t *xlate_to, uint
 
 		*xlate_from &= (~(1 << (pos - 1)));
 	}
-#else
-	*xlate_to |= SUPPORTED_10baseT_Full;
-	*xlate_to |= SUPPORTED_100baseT_Full;
-	*xlate_to |= SUPPORTED_1000baseT_Full;
-#endif
 }
 
 /*
@@ -231,7 +215,6 @@ static inline void nss_dp_fal_to_ethtool_linkmode_xlate(uint32_t *xlate_to, uint
  */
 static int32_t nss_dp_get_eee(struct net_device *netdev, struct ethtool_eee *eee)
 {
-#ifdef NSS_FAL_SUPPORT
 	struct nss_dp_dev *dp_priv = (struct nss_dp_dev *)netdev_priv(netdev);
 	fal_port_eee_cfg_t port_eee_cfg;
 	uint32_t port_id;
@@ -255,12 +238,7 @@ static int32_t nss_dp_get_eee(struct net_device *netdev, struct ethtool_eee *eee
 	eee->eee_active = port_eee_cfg.eee_status;
 	eee->tx_lpi_enabled = port_eee_cfg.lpi_tx_enable;
 	eee->tx_lpi_timer = port_eee_cfg.lpi_sleep_timer;
-#else
-	eee->eee_enabled = 0;
-        eee->eee_active = 0;
-        eee->tx_lpi_enabled = 0;
-        //eee->tx_lpi_timer = 
-#endif
+
 	return 0;
 }
 
@@ -270,7 +248,6 @@ static int32_t nss_dp_get_eee(struct net_device *netdev, struct ethtool_eee *eee
  */
 static int32_t nss_dp_set_eee(struct net_device *netdev, struct ethtool_eee *eee)
 {
-#ifdef NSS_FAL_SUPPORT
 	struct nss_dp_dev *dp_priv = (struct nss_dp_dev *)netdev_priv(netdev);
 	fal_port_eee_cfg_t port_eee_cfg, port_eee_cur_cfg;
 	uint32_t port_id, pos;
@@ -357,7 +334,7 @@ static int32_t nss_dp_set_eee(struct net_device *netdev, struct ethtool_eee *eee
 		netdev_dbg(netdev, "Could not configure EEE err = %d\n", ret);
 		return -EIO;
 	}
-#endif
+
 	return 0;
 }
 

@@ -20,10 +20,8 @@
 #include <linux/if_bridge.h>
 #include <linux/version.h>
 #include "nss_dp_dev.h"
-#ifdef NSS_FAL_SUPPORT
 #include "fal/fal_stp.h"
 #include "fal/fal_ctrlpkt.h"
-#endif
 
 #define NSS_DP_SWITCH_ID		0
 #define NSS_DP_SW_ETHTYPE_PID		0 /* PPE ethtype profile ID for slow protocols */
@@ -60,7 +58,6 @@ static int nss_dp_attr_get(struct net_device *dev, struct switchdev_attr *attr)
  */
 static void nss_dp_set_slow_proto_filter(struct nss_dp_dev *dp_priv, bool filter_enable)
 {
-#ifdef NSS_FAL_SUPPORT
 	sw_error_t ret = 0;
 	fal_ctrlpkt_profile_t profile;
 	fal_ctrlpkt_action_t action;
@@ -137,7 +134,6 @@ static void nss_dp_set_slow_proto_filter(struct nss_dp_dev *dp_priv, bool filter
 			}
 		}
 	}
-#endif
 }
 
 /*
@@ -146,7 +142,6 @@ static void nss_dp_set_slow_proto_filter(struct nss_dp_dev *dp_priv, bool filter
  */
 static int nss_dp_stp_state_set(struct nss_dp_dev *dp_priv, u8 state)
 {
-#if 0
 	sw_error_t err;
 	fal_stp_state_t stp_state;
 
@@ -199,7 +194,6 @@ static int nss_dp_stp_state_set(struct nss_dp_dev *dp_priv, u8 state)
 		return -EINVAL;
 	}
 
-#endif
 	return 0;
 }
 

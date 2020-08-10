@@ -14,13 +14,14 @@ qca-nss-dp-objs += edma/edma_cfg.o \
 		   nss_dp_main.o \
 		   nss_dp_switchdev.o
 
-#qca-nss-dp-objs += gmac_hal_ops/qcom/qcom_if.o
-#qca-nss-dp-objs += gmac_hal_ops/syn/syn_if.o
+qca-nss-dp-objs += gmac_hal_ops/qcom/qcom_if.o
+qca-nss-dp-objs += gmac_hal_ops/syn/syn_if.o
 
-NSS_DP_INCLUDE = -I$(obj)/include -I$(obj)/exports
+NSS_DP_INCLUDE = -I$(obj)/include -I$(obj)/exports -I$(obj)/gmac_hal_ops/include \
+		 -I$(obj)/../../phy/hppe/include
 
 ccflags-y += $(NSS_DP_INCLUDE)
 
-#ccflags-y += -DNSS_DP_PPE_SUPPORT
+ccflags-y += -DNSS_DP_PPE_SUPPORT
 
 ccflags-y += -DNSS_DP_IPQ807X

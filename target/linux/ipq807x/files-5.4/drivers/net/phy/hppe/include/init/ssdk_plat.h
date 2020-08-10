@@ -404,7 +404,5 @@ void ssdk_sysfs_exit (void);
 int ssdk_plat_init(ssdk_init_cfg *cfg, a_uint32_t dev_id);
 void ssdk_plat_exit(a_uint32_t dev_id);
 
-a_uint32_t add_qca_phy_dev(struct qca_phy_priv *priv);
-
 #endif
 /*qca808x_end*/

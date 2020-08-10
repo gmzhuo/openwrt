@@ -18,9 +18,7 @@
 #include <linux/of_address.h>
 #include <linux/of_platform.h>
 #include <linux/debugfs.h>
-#ifdef NSS_FAL_SUPPORT
 #include <fal/fal_vsi.h>
-#endif
 
 #include "nss_dp_dev.h"
 #include "edma_regs.h"
@@ -239,7 +237,6 @@ static int edma_if_pause_on_off(struct nss_dp_data_plane_ctx *dpc,
  */
 static int edma_if_vsi_assign(struct nss_dp_data_plane_ctx *dpc, uint32_t vsi)
 {
-#ifdef NSS_FAL_SUPPORT
 	struct net_device *netdev = dpc->dev;
 	int32_t port_num;
 
@@ -252,9 +249,6 @@ static int edma_if_vsi_assign(struct nss_dp_data_plane_ctx *dpc, uint32_t vsi)
 		return NSS_DP_FAILURE;
 
 	return NSS_DP_SUCCESS;
-#else
-	return 0;
-#endif
 }
 
 /*
@@ -264,7 +258,6 @@ static int edma_if_vsi_assign(struct nss_dp_data_plane_ctx *dpc, uint32_t vsi)
  */
 static int edma_if_vsi_unassign(struct nss_dp_data_plane_ctx *dpc, uint32_t vsi)
 {
-#ifdef NSS_FAL_SUPPORT
 	struct net_device *netdev = dpc->dev;
 	uint32_t port_num;
 
@@ -277,9 +270,6 @@ static int edma_if_vsi_unassign(struct nss_dp_data_plane_ctx *dpc, uint32_t vsi)
 		return NSS_DP_FAILURE;
 
 	return NSS_DP_SUCCESS;
-#else
-	return 0;
-#endif
 }
 
 #ifdef CONFIG_RFS_ACCEL

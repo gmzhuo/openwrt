@@ -6,9 +6,6 @@ obj ?= .
 
 obj-$(CONFIG_QCOM_SW_HPPE) += switch-hppe.o
 
-switch-hppe-objs += main.o ssdk_plat.o hsl/hppe_acl.o \
-		hsl/hppe_reg_access.o
-
 HPPE_SW_INCLUDE = -I$(obj)/include -I$(obj)/exports \
 		  -I$(obj)/include/common -I$(obj)/include/sal/os \
 		  -I$(obj)/include/sal/os/linux -I$(obj)/include/hsl \
@@ -17,3 +14,12 @@ HPPE_SW_INCLUDE = -I$(obj)/include -I$(obj)/exports \
 
 ccflags-y += $(HPPE_SW_INCLUDE)
 
+switch-hppe-objs +=
+	init/ssdk_clk.o
+	init/ssdk_dts.o
+	init/ssdk_hppe.o
+	init/ssdk_init.o
+	init/ssdk_interrupt.o
+	init/ssdk_phy_i2c.o
+	init/ssdk_plat.o
+	init/ssdk_uci.o

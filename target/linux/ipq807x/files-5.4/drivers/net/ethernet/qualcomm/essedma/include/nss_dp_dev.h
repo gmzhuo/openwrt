@@ -26,10 +26,7 @@
 #include <linux/if_vlan.h>
 
 #include "nss_dp_api_if.h"
-
 #include "nss_dp_hal_if.h"
-
-struct gmac_hal_platform_data;
 
 #define NSS_DP_START_PHY_PORT	1
 #if defined(NSS_DP_IPQ60XX)
@@ -74,10 +71,8 @@ struct nss_dp_dev {
 	struct nss_dp_data_plane_ops *data_plane_ops;
 					/* ops for each data plane*/
 	struct nss_dp_global_ctx *ctx;	/* Global NSS DP context */
-#ifdef NSS_FAL_SUPPORT
 	struct nss_gmac_hal_dev *gmac_hal_ctx;	/* context of gmac hal */
 	struct nss_gmac_hal_ops *gmac_hal_ops;	/* GMAC HAL OPS*/
-#endif
 
 	/* switchdev related attributes */
 	u8 stp_state;			/* STP state of this physical port */
