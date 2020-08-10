@@ -15,6 +15,8 @@
 
  #ifndef __AR40XX_H
 #define __AR40XX_H
+#include "init/ssdk_init.h"
+#include "init/ssdk_plat.h"
 
 #define AR40XX_MAX_VLANS	128
 #define AR40XX_NUM_PORTS	6
@@ -32,6 +34,8 @@ struct ar40xx_priv {
 	u32 cpu_bmp;
 	u32 lan_bmp;
 	u32 wan_bmp;
+	u32 devid;
+	struct qca_phy_priv phy_priv;
 
 	struct mii_bus *mii_bus;
 	struct phy_device *phy;
@@ -78,9 +82,6 @@ struct ar40xx_priv {
 #define AR40XX_LAN_VLAN	1
 #define AR40XX_WAN_VLAN	2
 
-enum ar40xx_port_wrapper_cfg {
-	PORT_WRAPPER_PSGMII = 0,
-};
 
 struct ar40xx_mib_desc {
 	u32 size;

@@ -4,12 +4,12 @@
  	  This driver supports the MDIO interface found in Qualcomm
  	  Atheros ipq40xx Soc chip.
  
-+config QCOM_ESS_SWITCH
-+	tristate "Driver for Qualcomm Atheros ESS Switch"
++config QCOM_SW_HPPE
++	tristate "Driver for Qualcomm HPPE Switch"
 +	depends on HAS_IOMEM && OF
 +	select SWCONFIG
 +	---help---
-+	   This is the driver for Qualcomm Atheros ESS switches.
++	   This is the driver for Qualcomm HPPE switches.
 +
  endif # PHYLIB
  
@@ -20,7 +20,7 @@
  aquantia-objs			+= aquantia_hwmon.o
  endif
  obj-$(CONFIG_AQUANTIA_PHY)	+= aquantia.o
-+obj-$(CONFIG_AR40XX_PHY)	+= qca-ess-switch.o
++obj-$(CONFIG_QCOM_SW_HPPE)	+= hppe/
  obj-$(CONFIG_AX88796B_PHY)	+= ax88796b.o
  obj-$(CONFIG_AT803X_PHY)	+= at803x.o
  obj-$(CONFIG_BCM63XX_PHY)	+= bcm63xx.o

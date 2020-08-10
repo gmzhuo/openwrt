@@ -27,10 +27,13 @@
 #include <linux/of_device.h>
 #include <linux/of_address.h>
 #include <linux/of_platform.h>
+#include <linux/of_mdio.h>
 #include <linux/mdio.h>
 #include <linux/gpio.h>
 
-#include "qca-ess-switch.h"
+#include "include/hppe.h"
+#include "init/ssdk_init.h"
+#include "init/ssdk_plat.h"
 
 static struct ar40xx_priv *ar40xx_priv;
 
@@ -1776,6 +1779,7 @@ static const struct switch_dev_ops ar40xx_sw_ops = {
 	.get_port_link = ar40xx_sw_get_port_link,
 };
 
+#if 0
 static int
 qcom_ess_switch_mdiodev_probe(struct mdio_device *mdiodev)
 {
@@ -1823,6 +1827,7 @@ static struct mdio_driver qcom_ess_switch_mdio_driver = {
 };
 
 /* End of phy driver support */
+#endif
 
 /* Platform driver probe function */
 
@@ -1839,11 +1844,24 @@ static int ar40xx_probe(struct platform_device *pdev)
 	struct resource psgmii_base = {0};
 	struct resource switch_base = {0};
 	int ret;
+	struct mii_bus *mii = NULL;
+
+	struct device_node *miibus_node = of_parse_phandle(pdev->dev.of_node, "mii_bus", 0);
+	if(miibus_node) {
+		mii = of_mdio_find_bus(miibus_node);
+		if(mii == NULL || IS_ERR(mii)) {
+			printk("wait mdio up %llx\r\n", miibus_node);
+			return -EPROBE_DEFER;
+		}
+	} else {
+		printk("mii_bus missed\r\n");
+	}
 
 	priv = devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
 	if (!priv)
 		return -ENOMEM;
 
+	priv->mii_bus = mii;
 	platform_set_drvdata(pdev, priv);
 	ar40xx_priv = priv;
 
@@ -1856,6 +1874,8 @@ static int ar40xx_probe(struct platform_device *pdev)
 		dev_err(&pdev->dev, "Failed to ioremap switch_base!\n");
 		return PTR_ERR(priv->hw_addr);
 	}
+
+	priv->phy_priv.hw_addr = priv->hw_addr;
 
 	/*psgmii dts get*/
 	psgmii_node = of_find_node_by_name(NULL, "ess-psgmii");
@@ -1901,12 +1921,6 @@ static int ar40xx_probe(struct platform_device *pdev)
 		return -EIO;
 	}
 
-	ret = mdio_driver_register(&qcom_ess_switch_mdio_driver);
-	if (ret) {
-		dev_err(&pdev->dev, "Failed to register ar40xx mdio driver!\n");
-		return -EIO;
-	}
-
 	mutex_init(&priv->reg_mutex);
 	mutex_init(&priv->mib_lock);
 	INIT_DELAYED_WORK(&priv->mib_work, ar40xx_mib_work_func);
@@ -1914,7 +1928,10 @@ static int ar40xx_probe(struct platform_device *pdev)
 	/* register switch */
 	swdev = &priv->dev;
 
-	swdev->alias = "aaaaaaa";
+	
+	priv->devid = add_qca_phy_dev(&priv->phy_priv);
+
+	swdev->alias = dev_name(&priv->mii_bus->dev);
 
 	swdev->cpu_port = 0;
 	swdev->name = "ipq8074";
@@ -1934,12 +1951,15 @@ static int ar40xx_probe(struct platform_device *pdev)
 		goto err_unregister_switch;
 	}
 
+	if(priv->mii_bus != NULL) {
+		ar40xx_start(priv);
+	}
 	return 0;
 
 err_unregister_switch:
 	unregister_switch(&priv->dev);
 err_unregister_phy:
-	mdio_driver_unregister(&qcom_ess_switch_mdio_driver);
+	//mdio_driver_unregister(&qcom_ess_switch_mdio_driver);
 err_missing_phy:
 	platform_set_drvdata(pdev, NULL);
 	return ret;

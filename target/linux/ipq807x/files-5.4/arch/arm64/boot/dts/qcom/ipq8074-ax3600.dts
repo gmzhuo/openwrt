@@ -290,7 +290,7 @@
 			perst-gpio = <&tlmm 52 0x1>;
 		};
 
-		mdio@90000 {
+		mdio_ipq807x: mdio@90000 {
 			pinctrl-0 = <&mdio_pins>;
 			pinctrl-names = "default";
 			phy-reset-gpio = <&tlmm 37 0>;
@@ -333,6 +333,7 @@
 			switch_mac_mode2 = <0xff>; /* mac mode for uniphy instance2*/
 			bm_tick_mode = <0>; /* bm tick mode */
 			tm_tick_mode = <0>; /* tm tick mode */
+			mii_bus = <&mdio_ipq807x>;
 
 			clocks = <&gcc GCC_CMN_12GPLL_AHB_CLK>,
 					<&gcc GCC_CMN_12GPLL_SYS_CLK>,
