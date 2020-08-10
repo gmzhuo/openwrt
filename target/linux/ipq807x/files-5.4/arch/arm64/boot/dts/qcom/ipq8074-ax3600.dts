@@ -3,8 +3,6 @@
 /* Copyright (c) 2017, The Linux Foundation. All rights reserved.
  */
 #include "ipq8074.dtsi"
-#include <dt-bindings/iio/qcom,spmi-vadc.h>
-#include <dt-bindings/spmi/spmi.h>
 
 / {
 	#address-cells = <0x2>;
@@ -290,7 +288,7 @@
 			perst-gpio = <&tlmm 52 0x1>;
 		};
 
-		mdio_ipq807x: mdio@90000 {
+		mdio@90000 {
 			pinctrl-0 = <&mdio_pins>;
 			pinctrl-names = "default";
 			phy-reset-gpio = <&tlmm 37 0>;
@@ -314,16 +312,11 @@
 			phy4: ethernet-phy@4 {
 				reg = <4>;
 			};
-			switch0@1f {
-                compatible = "qca,ipq-ess-switch";
-                reg = <0x1f>;
-				switch = <&qcom_ess_switch>;
-			};
 		};
 
-		qcom_ess_switch:ess-switch@3a000000 {
+		ess-switch@3a000000 {
 			compatible = "qcom,ess-switch-ipq807x";
-			reg = <0x3a000000 0x80000>;
+			reg = <0x3a000000 0x1000000>;
 			switch_access_mode = "local bus";
 			switch_cpu_bmp = <0x1>;  /* cpu port bitmap */
 			switch_lan_bmp = <0x1e>; /* lan port bitmap */
@@ -333,8 +326,6 @@
 			switch_mac_mode2 = <0xff>; /* mac mode for uniphy instance2*/
 			bm_tick_mode = <0>; /* bm tick mode */
 			tm_tick_mode = <0>; /* tm tick mode */
-			mii_bus = <&mdio_ipq807x>;
-
 			clocks = <&gcc GCC_CMN_12GPLL_AHB_CLK>,
 					<&gcc GCC_CMN_12GPLL_SYS_CLK>,
 					<&gcc GCC_UNIPHY0_AHB_CLK>,
@@ -432,7 +423,7 @@
 					"nss_port5_rx_clk_src",
 					"nss_port5_tx_clk_src";
 
-			resets = <&gcc GCC_PPE_FULL_RESET>, <&gcc GCC_PPE_FULL_RESET>,
+			resets = <&gcc GCC_PPE_FULL_RESET>,
 				 <&gcc GCC_UNIPHY0_SOFT_RESET>,
 				 <&gcc GCC_UNIPHY0_XPCS_RESET>,
 				 <&gcc GCC_UNIPHY1_SOFT_RESET>,
@@ -446,7 +437,7 @@
 				 <&gcc GCC_NSSPORT5_RESET>,
 				 <&gcc GCC_NSSPORT6_RESET>;
 
-			reset-names = "ess_rst", "ppe_rst", "uniphy0_soft_rst",
+			reset-names = "ppe_rst", "uniphy0_soft_rst",
 					"uniphy0_xpcs_rst", "uniphy1_soft_rst",
 					"uniphy1_xpcs_rst", "uniphy2_soft_rst",
 					"uniphy2_xpcs_rst", "nss_port1_rst",
@@ -745,12 +736,6 @@
 					};
 				};
 			};
-		};
-		ess-psgmii@98000 {
-			compatible = "qcom,ess-psgmii";
-			reg = <0x3a001000 0x800>;
-			psgmii_access_mode = "local bus";
-			status = "ok";
 		};
 
 		ess-uniphy@7a00000 {
@@ -1208,104 +1193,6 @@
 						"gcc_usb1_pipe_clk";
 
 			qcom,rproc = <&q6v5_wcss>;
-		};
-
-		e_smps1_reg: fixed-regulator@0 {
-			compatible = "regulator-fixed";
-			regulator-name = "e-smps1-reg";
-			regulator-min-microvolt = <3300000>;
-			regulator-max-microvolt = <3300000>;
-			regulator-always-on;
-			regulator-boot-on;
-		};
-
-		spmi_bus: qcom,spmi@200f000 {
-			compatible = "qcom,spmi-pmic-arb";
-			reg = <0x200f000 0x1000>,
-				<0x2400000 0x800000>,
-				<0x2c00000 0x800000>,
-				<0x3800000 0x200000>,
-				<0x200a000 0x000700>;
-			reg-names = "core", "chnls", "obsrvr", "intr", "cnfg";
-			interrupt-names = "periph_irq";
-			interrupts = <GIC_SPI 190 IRQ_TYPE_NONE>;
-			qcom,ee = <0>;
-			qcom,channel = <0>;
-			#address-cells = <2>;
-			#size-cells = <0>;
-			interrupt-controller;
-			#interrupt-cells = <4>;
-			cell-index = <0>;
-
-			pmic@0 {
-				compatible ="qcom,spmi-pmic";
-				reg = <0x0 SPMI_USID>;
-				#address-cells = <1>;
-				#size-cells = <0>;
-
-				pmp8074_vadc: vadc@3100 {
-					compatible = "qcom,pmp8074-spmi-vadc";
-					reg = <0x3100 0x100>;
-					interrupts = <0x0 0x31 0x0 IRQ_TYPE_EDGE_RISING>;
-					#address-cells = <1>;
-					#size-cells = <0>;
-					#io-channel-cells = <1>;
-
-					pa_therm1 {
-						reg = <VADC_PMP8074_AMUX_THM1>;
-						qcom,vadc-thermal-node;
-					};
-					pa_therm2 {
-						reg = <VADC_PMP8074_AMUX_THM2>;
-						qcom,vadc-thermal-node;
-					};
-					pa_therm3 {
-						reg = <VADC_PMP8074_AMUX_THM3>;
-						qcom,vadc-thermal-node;
-					};
-					die_temp {
-						reg = <VADC_PMP8074_DIE_TEMP>;
-					};
-				};
-			};
-
-			pmic@1 {
-				compatible ="qcom,spmi-pmic";
-				reg = <0x1 SPMI_USID>;
-				#address-cells = <1>;
-				#size-cells = <0>;
-
-				regulators {
-					compatible = "qcom,pmd9655-regulators";
-					vdd_s3-supply = <&e_smps1_reg>;
-					vdd_s4-supply = <&e_smps1_reg>;
-					vdd_ldo11-supply = <&e_smps1_reg>;
-
-					s3: s3 {
-						regulator-name = "pmd9655_s3";
-						regulator-min-microvolt = <592000>;
-						regulator-max-microvolt = <1064000>;
-						regulator-always-on;
-						regulator-boot-on;
-					};
-
-					s4: s4 {
-						regulator-name = "pmd9655_s4";
-						regulator-min-microvolt = <712000>;
-						regulator-max-microvolt = <992000>;
-						regulator-always-on;
-						regulator-boot-on;
-					};
-
-					ldo11: ldo11 {
-						regulator-name = "pmd9655_ldo11";
-						regulator-min-microvolt = <1104000>;
-						regulator-max-microvolt = <3300000>;
-						regulator-always-on;
-						regulator-boot-on;
-					};
-				};
-			};
 		};
 
 	};
